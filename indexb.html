@@ -96,14 +96,14 @@
       position: absolute;
       display: none;
       pointer-events: none;
-      background: #fff;
-      color: #fff;
+      background: #006473;  /* Changed from white to dark teal */
+      color: #fff;          /* Changed from white to white text on dark bg */
       padding: 8px 12px;
       font-size: 1rem;
       font-weight: 600;
       white-space: nowrap;
       transform: translate(-50%, -100%);
-      border: 0 solid #006473;
+      border: 0 solid #004f5c;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       z-index: 1000;
     }
@@ -143,7 +143,7 @@
       <button type="submit">Look up</button>
     </form>
     <div id="result" aria-live="polite"></div>
-    <div class="data-source">Data from Senedd Cymru/Welsh Parliament • Your data is used temporarily for this search and is not recorded. V2</div>
+    <div class="data-source">Data from Senedd Cymru/Welsh Parliament • Your data is used temporarily for this search and is not recorded. V3</div>
   </div>
 
   <div id="map-tooltip"></div>
@@ -238,112 +238,89 @@
             });
 
             const matchElement = svgElement.querySelector(`#${matchedConstituencyId}`);
-              if (matchElement) {
-                matchElement.classList.add('highlighted-const');
-              
-                // Show tooltip at the center of the matched constituency
-                const shapes = matchElement.querySelectorAll('path, polygon, rect, circle, ellipse');
-                if (shapes.length > 0) {
-                  let totalX = 0, totalY = 0;
-              
-                  shapes.forEach(shape => {
-                    const bbox = shape.getBBox();
-                    const cx = bbox.x + bbox.width / 2;
-                    const cy = bbox.y + bbox.height / 2;
-                    totalX += cx;
-                    totalY += cy;
-                  });
-              
-                  const avgX = totalX / shapes.length;
-                  const avgY = totalY / shapes.length;
-              
-                  // Get map position in viewport
-                  const svgRect = svgElement.getBoundingClientRect();
-              
-                  // Convert SVG coords to screen coords
-                  const tooltipX = svgRect.left + avgX;
-                  const tooltipY = svgRect.top + avgY;
-              
-                  // Set and show tooltip
-                  tooltip.textContent = matchElement.id.replace(/-/g, ' ');
-                  tooltip.style.background = '#006473';
-                  tooltip.style.color = '#fff';
-                  tooltip.style.borderColor = '#004f5c';
-                  tooltip.style.display = 'block';
-                  tooltip.style.left = `${tooltipX}px`;
-                  tooltip.style.top = `${tooltipY - 16}px`;
-                  tooltip.setAttribute('data-highlighted', 'true');
-                }
-              }
+            if (matchElement) {
+              matchElement.classList.add('highlighted-const');
 
-            svgElement.querySelectorAll('path').forEach(path => {
-              path.addEventListener('mouseenter', () => path.style.opacity = 0.7);
-              path.addEventListener('mouseleave', () => path.style.opacity = 1);
-            });
+              // Show tooltip at the center of the matched constituency
+              const shapes = matchElement.querySelectorAll('path, polygon, rect, circle, ellipse');
+              if (shapes.length > 0) {
+                let totalX = 0, totalY = 0, count = 0;
+                shapes.forEach(shape => {
+                  const bbox = shape.getBoundingClientRect();
+                  totalX += bbox.left + bbox.width / 2;
+                  totalY += bbox.top + bbox.height / 2;
+                  count++;
+                });
+                const tooltipX = totalX / count;
+                const tooltipY = totalY / count;
+
+                tooltip.textContent = matchedConstituencyId.replace(/-/g, ' ');
+                tooltip.style.background = '#006473';
+                tooltip.style.color = '#fff';
+                tooltip.style.borderColor = '#004f5c';
+                tooltip.style.display = 'block';
+                tooltip.style.left = `${tooltipX}px`;
+                tooltip.style.top = `${tooltipY - 16}px`;
+                tooltip.setAttribute('data-highlighted', 'true');
+              }
+            }
           }
-        } catch (svgErr) {
-          svgContainer.innerHTML = '<p style="color:red;">Could not load map for this constituency.</p>';
-          console.error(svgErr);
+        } catch (err) {
+          svgContainer.innerHTML = `<p>Could not load map SVG.</p>`;
         }
       }
 
-      async function lookupByPostcode(postcode) {
-        resultDiv.textContent = 'Looking up constituency…';
-        try {
-          const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
-          const data = await res.json();
+      async function lookupPostcode(postcode) {
+        const cleanPostcode = postcode.trim().toUpperCase().replace(/\s+/g, '');
+        if (!cleanPostcode.match(/^[A-Z]{1,2}\d[A-Z\d]?\d[A-Z]{2}$/)) {
+          resultDiv.textContent = 'Please enter a valid postcode.';
+          return;
+        }
 
-          if (!data.result) throw new Error('Invalid postcode');
-          if (data.result.country !== 'Wales') {
-            resultDiv.textContent = 'Sorry, this tool only supports Welsh postcodes.';
+        try {
+          resultDiv.textContent = 'Looking up postcode coordinates…';
+          const res = await fetch(`https://api.postcodes.io/postcodes/${cleanPostcode}`);
+          const json = await res.json();
+          if (json.status !== 200) {
+            resultDiv.textContent = 'Postcode not found.';
             return;
           }
-
-          const { longitude, latitude } = data.result;
+          const { longitude, latitude } = json.result;
           await lookupByCoords(longitude, latitude);
         } catch (err) {
-          resultDiv.textContent = 'Something went wrong. Please check your postcode and try again.';
-          console.error(err);
+          resultDiv.textContent = 'Error looking up postcode.';
         }
       }
 
-      form.addEventListener('submit', async e => {
+      form.addEventListener('submit', e => {
         e.preventDefault();
-        const postcode = document.getElementById('postcode').value.trim();
-        await lookupByPostcode(postcode);
+        tooltip.style.display = 'none';
+        lookupPostcode(form.postcode.value);
       });
 
       locationBtn.addEventListener('click', () => {
+        tooltip.style.display = 'none';
         if (!navigator.geolocation) {
           resultDiv.textContent = 'Geolocation is not supported by your browser.';
           return;
         }
-        resultDiv.textContent = 'Getting your location…';
+        resultDiv.textContent = 'Locating…';
         navigator.geolocation.getCurrentPosition(
-          async position => {
+          position => {
             const { longitude, latitude } = position.coords;
-            try {
-              const res = await fetch(`https://api.postcodes.io/postcodes?lon=${longitude}&lat=${latitude}`);
-              const data = await res.json();
-
-              if (data.result?.length) {
-                const postcode = data.result[0].postcode;
-                document.getElementById('postcode').value = postcode;
-              }
-              await lookupByCoords(longitude, latitude);
-            } catch {
-              await lookupByCoords(longitude, latitude);
-            }
+            lookupByCoords(longitude, latitude);
           },
-          error => {
-            const messages = {
-              1: 'Permission to access location denied.',
-              2: 'Position unavailable.',
-              3: 'Location request timed out.'
-            };
-            resultDiv.textContent = messages[error.code] || 'An unknown error occurred.';
+          () => {
+            resultDiv.textContent = 'Unable to retrieve your location.';
           }
         );
+      });
+
+      locationBtn.addEventListener('keypress', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          locationBtn.click();
+        }
       });
     })();
   </script>
