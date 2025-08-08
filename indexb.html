@@ -238,81 +238,76 @@
             });
 
             const matchElement = svgElement.querySelector(`#${matchedConstituencyId}`);
-            if (matchElement) {
-              matchElement.classList.add('highlighted-const');
+            if (matchElement) matchElement.classList.add('highlighted-const');
 
-              // ** ADDING PRELOADED TOOLTIP POSITION AND SHOWING IT **
-              const bbox = matchElement.getBBox();
-              const svgRect = svgElement.getBoundingClientRect();
-
-              const tooltipX = svgRect.left + bbox.x + bbox.width / 2;
-              const tooltipY = svgRect.top + bbox.y;
-
-              tooltip.textContent = constituencyName;
-              tooltip.style.background = '#006473';
-              tooltip.style.color = '#fff';
-              tooltip.style.borderColor = '#004f5c';
-              tooltip.style.display = 'block';
-              tooltip.style.left = `${tooltipX}px`;
-              tooltip.style.top = `${tooltipY - 20}px`;
-            }
-
-            // Scroll the map into view if needed
-            svgContainer.scrollIntoView({ behavior: 'smooth' });
+            svgElement.querySelectorAll('path').forEach(path => {
+              path.addEventListener('mouseenter', () => path.style.opacity = 0.7);
+              path.addEventListener('mouseleave', () => path.style.opacity = 1);
+            });
           }
-        } catch (err) {
-          svgContainer.innerHTML = '<p>Failed to load the map.</p>';
+        } catch (svgErr) {
+          svgContainer.innerHTML = '<p style="color:red;">Could not load map for this constituency.</p>';
+          console.error(svgErr);
         }
       }
 
       async function lookupByPostcode(postcode) {
-        if (!postcode) {
-          resultDiv.textContent = 'Please enter a postcode.';
-          return;
-        }
-        resultDiv.textContent = 'Looking up postcode…';
-
+        resultDiv.textContent = 'Looking up constituency…';
         try {
           const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
           const data = await res.json();
 
-          if (data.status !== 200) {
-            resultDiv.textContent = 'Postcode not found.';
+          if (!data.result) throw new Error('Invalid postcode');
+          if (data.result.country !== 'Wales') {
+            resultDiv.textContent = 'Sorry, this tool only supports Welsh postcodes.';
             return;
           }
 
           const { longitude, latitude } = data.result;
-          lookupByCoords(longitude, latitude);
-        } catch {
-          resultDiv.textContent = 'Error looking up postcode.';
+          await lookupByCoords(longitude, latitude);
+        } catch (err) {
+          resultDiv.textContent = 'Something went wrong. Please check your postcode and try again.';
+          console.error(err);
         }
       }
 
-      form.addEventListener('submit', e => {
+      form.addEventListener('submit', async e => {
         e.preventDefault();
-        tooltip.style.display = 'none';
-        lookupByPostcode(form.postcode.value.trim());
+        const postcode = document.getElementById('postcode').value.trim();
+        await lookupByPostcode(postcode);
       });
 
       locationBtn.addEventListener('click', () => {
-        tooltip.style.display = 'none';
         if (!navigator.geolocation) {
-          resultDiv.textContent = 'Geolocation is not supported.';
+          resultDiv.textContent = 'Geolocation is not supported by your browser.';
           return;
         }
-        resultDiv.textContent = 'Finding your location…';
+        resultDiv.textContent = 'Getting your location…';
         navigator.geolocation.getCurrentPosition(
-          pos => lookupByCoords(pos.coords.longitude, pos.coords.latitude),
-          () => (resultDiv.textContent = 'Unable to get your location.')
-        );
-      });
+          async position => {
+            const { longitude, latitude } = position.coords;
+            try {
+              const res = await fetch(`https://api.postcodes.io/postcodes?lon=${longitude}&lat=${latitude}`);
+              const data = await res.json();
 
-      // Allow keyboard activation of location button
-      locationBtn.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          locationBtn.click();
-        }
+              if (data.result?.length) {
+                const postcode = data.result[0].postcode;
+                document.getElementById('postcode').value = postcode;
+              }
+              await lookupByCoords(longitude, latitude);
+            } catch {
+              await lookupByCoords(longitude, latitude);
+            }
+          },
+          error => {
+            const messages = {
+              1: 'Permission to access location denied.',
+              2: 'Position unavailable.',
+              3: 'Location request timed out.'
+            };
+            resultDiv.textContent = messages[error.code] || 'An unknown error occurred.';
+          }
+        );
       });
     })();
   </script>
