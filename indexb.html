@@ -238,41 +238,44 @@
             });
 
             const matchElement = svgElement.querySelector(`#${matchedConstituencyId}`);
-if (matchElement) {
-  // Highlight as before
-  matchElement.classList.add('highlighted-const');
+              if (matchElement) {
+                matchElement.classList.add('highlighted-const');
+              
+                // Show tooltip at the center of the matched constituency
+                const shapes = matchElement.querySelectorAll('path, polygon, rect, circle, ellipse');
+                if (shapes.length > 0) {
+                  let totalX = 0, totalY = 0;
+              
+                  shapes.forEach(shape => {
+                    const bbox = shape.getBBox();
+                    const cx = bbox.x + bbox.width / 2;
+                    const cy = bbox.y + bbox.height / 2;
+                    totalX += cx;
+                    totalY += cy;
+                  });
+              
+                  const avgX = totalX / shapes.length;
+                  const avgY = totalY / shapes.length;
+              
+                  // Get map position in viewport
+                  const svgRect = svgElement.getBoundingClientRect();
+              
+                  // Convert SVG coords to screen coords
+                  const tooltipX = svgRect.left + avgX;
+                  const tooltipY = svgRect.top + avgY;
+              
+                  // Set and show tooltip
+                  tooltip.textContent = matchElement.id.replace(/-/g, ' ');
+                  tooltip.style.background = '#006473';
+                  tooltip.style.color = '#fff';
+                  tooltip.style.borderColor = '#004f5c';
+                  tooltip.style.display = 'block';
+                  tooltip.style.left = `${tooltipX}px`;
+                  tooltip.style.top = `${tooltipY - 16}px`;
+                  tooltip.setAttribute('data-highlighted', 'true');
+                }
+              }
 
-  // Find all shapes in the matched constituency
-  const shapes = matchElement.querySelectorAll('path, polygon, rect, circle');
-  if (shapes.length > 0) {
-    let totalX = 0, totalY = 0;
-
-    shapes.forEach(shape => {
-      const bbox = shape.getBBox();
-      const cx = bbox.x + bbox.width / 2;
-      const cy = bbox.y + bbox.height / 2;
-      totalX += cx;
-      totalY += cy;
-    });
-
-    const avgX = totalX / shapes.length;
-    const avgY = totalY / shapes.length;
-
-    // Position the tooltip over the average center
-    const svgRect = svgElement.getBoundingClientRect();
-    const tooltipX = svgRect.left + avgX;
-    const tooltipY = svgRect.top + avgY;
-
-    tooltip.textContent = matchElement.id.replace(/-/g, ' ');
-    tooltip.style.background = '#006473';
-    tooltip.style.color = '#fff';
-    tooltip.style.borderColor = '#004f5c';
-    tooltip.style.display = 'block';
-    tooltip.style.left = `${tooltipX}px`;
-    tooltip.style.top = `${tooltipY - 16}px`;
-    tooltip.setAttribute('data-highlighted', 'true');
-  }
-}
             svgElement.querySelectorAll('path').forEach(path => {
               path.addEventListener('mouseenter', () => path.style.opacity = 0.7);
               path.addEventListener('mouseleave', () => path.style.opacity = 1);
