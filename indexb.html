@@ -44,6 +44,7 @@
       border: 1px solid #006473;
       border-radius: 0;
       outline-offset: 2px;
+      text-transform: uppercase;
     }
     input[type="text"]:focus {
       outline: 2px solid #006473;
@@ -66,6 +67,7 @@
     #result {
       margin-top: 1.5rem;
       font-weight: 600;
+      min-height: 1.2em; /* prevent layout shift */
     }
     .const-highlight {
       color: #006473;
@@ -89,6 +91,8 @@
       transition: fill 0.2s, stroke 0.2s;
     }
     #location-btn:hover {
+      fill: 004f5c;
+      stroke: 004f5c;
       fill: #004f5c;
       stroke: #004f5c;
     }
@@ -98,12 +102,14 @@
       pointer-events: none;
       background: #fff;
       color: #fff;
+      color: #006473;
       padding: 8px 12px;
       font-size: 1rem;
       font-weight: 600;
       white-space: nowrap;
       transform: translate(-50%, -100%);
       border: 0 solid #006473;
+      border: 1px solid #006473;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       z-index: 1000;
     }
@@ -133,6 +139,22 @@
       <div style="display:flex; align-items:center;">
         <input type="text" id="postcode" placeholder="e.g. CF99 1SN" required aria-required="true" aria-describedby="postcode-desc" />
         <svg id="location-btn" role="button" tabindex="0" aria-label="Find my current location" viewBox="0 0 24 24">
+        <input 
+          type="text" 
+          id="postcode" 
+          placeholder="e.g. CF99 1SN" 
+          required 
+          aria-required="true" 
+          aria-describedby="postcode-desc" 
+          autocomplete="postal-code"
+          />
+        <svg 
+          id="location-btn" 
+          role="button" 
+          tabindex="0" 
+          aria-label="Find my current location" 
+          viewBox="0 0 24 24"
+          >
           <circle cx="12" cy="12" r="8" fill="none" />
           <circle cx="12" cy="12" r="4" />
         </svg>
@@ -143,6 +165,7 @@
       <button type="submit">Look up</button>
     </form>
     <div id="result" aria-live="polite"></div>
+    <div id="result" aria-live="polite" aria-atomic="true"></div>
     <div class="data-source">Data from Senedd Cymru/Welsh Parliament • Your data is used temporarily for this search and is not recorded.</div>
   </div>
 
@@ -166,22 +189,6 @@
           resultDiv.textContent = 'Error loading constituency data.';
         });
 
-      function zoomToConstituency(svgElement, constituencyId) {
-        const group = svgElement.querySelector(`#${constituencyId}`);
-        if (!group) return;
-
-        const bbox = group.getBBox();
-
-        // Add padding around bounding box
-        const padding = 10;
-        const x = bbox.x - padding;
-        const y = bbox.y - padding;
-        const width = bbox.width + padding * 2;
-        const height = bbox.height + padding * 2;
-
-        svgElement.setAttribute('viewBox', `${x} ${y} ${width} ${height}`);
-      }
-
       async function lookupByCoords(longitude, latitude) {
         if (!boundaries) {
           resultDiv.textContent = 'Constituency data not loaded yet.';
@@ -200,6 +207,13 @@
         const constituencyName = match.properties.enw_cymrae;
         matchedConstituencyId = constituencyName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
 
+        // Normalize and sanitize constituency ID for SVG filename and element ID
+        matchedConstituencyId = constituencyName.toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/[^\w-]/g, '');
+
         resultDiv.innerHTML = `
           <p>Your 2026 Senedd constituency is: <span class="const-highlight">${constituencyName}</span></p>
           <div id="svg-map" style="width:100%; margin-top:1rem;"></div>
@@ -215,8 +229,6 @@
 
           const svgElement = svgContainer.querySelector('svg');
           if (svgElement) {
-            zoomToConstituency(svgElement, matchedConstituencyId);
-
             svgElement.querySelectorAll('g[id]').forEach(g => {
               const groupId = g.getAttribute('id');
               g.querySelectorAll('path, polygon, rect, circle').forEach(shape => {
@@ -266,17 +278,40 @@
         } catch (svgErr) {
           svgContainer.innerHTML = '<p style="color:red;">Could not load map for this constituency.</p>';
           console.error(svgErr);
+        } catch (e) {
+          svgContainer.innerHTML = `<p>Map image not available.</p>`;
         }
       }
 
       async function lookupByPostcode(postcode) {
         resultDiv.textContent = 'Looking up constituency…';
+      form.addEventListener('submit', async e => {
+        e.preventDefault();
+        const postcode = document.getElementById('postcode').value.trim().toUpperCase();
+
+        if (!postcode) {
+          resultDiv.textContent = 'Please enter a postcode.';
+          return;
+        }
+
+        resultDiv.textContent = 'Looking up postcode…';
+
         try {
           const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
           const data = await res.json();
+          const response = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
+          if (!response.ok) throw new Error('Postcode API error');
+          const data = await response.json();
+
+          if (data.status !== 200 || !data.result) {
+            resultDiv.textContent = 'Postcode not found or invalid. Please check and try again.';
+            return;
+          }
 
           if (!data.result) throw new Error('Invalid postcode');
           if (data.result.country !== 'Wales') {
+          const { longitude, latitude, country } = data.result;
+          if (country !== 'Wales') {
             resultDiv.textContent = 'Sorry, this tool only supports Welsh postcodes.';
             return;
           }
@@ -284,15 +319,17 @@
           const { longitude, latitude } = data.result;
           await lookupByCoords(longitude, latitude);
         } catch (err) {
+          lookupByCoords(longitude, latitude);
+        } catch {
           resultDiv.textContent = 'Something went wrong. Please check your postcode and try again.';
           console.error(err);
         }
       }
 
-      form.addEventListener('submit', e => {
+      form.addEventListener('submit', async e => {
         e.preventDefault();
-        const postcode = form.postcode.value.trim();
-        if (postcode) lookupByPostcode(postcode);
+        const postcode = document.getElementById('postcode').value.trim();
+        await lookupByPostcode(postcode);
       });
 
       locationBtn.addEventListener('click', () => {
@@ -300,19 +337,53 @@
           resultDiv.textContent = 'Geolocation is not supported by your browser.';
           return;
         }
-        navigator.geolocation.getCurrentPosition(position => {
-          const { longitude, latitude } = position.coords;
-          lookupByCoords(longitude, latitude);
-        }, () => {
-          resultDiv.textContent = 'Unable to retrieve your location.';
-        });
+        resultDiv.textContent = 'Getting your location…';
+        resultDiv.textContent = 'Locating…';
+        navigator.geolocation.getCurrentPosition(
+          async position => {
+            const { longitude, latitude } = position.coords;
+            try {
+              const res = await fetch(`https://api.postcodes.io/postcodes?lon=${longitude}&lat=${latitude}`);
+              const data = await res.json();
+
+              if (data.result?.length) {
+                const postcode = data.result[0].postcode;
+                document.getElementById('postcode').value = postcode;
+              }
+              await lookupByCoords(longitude, latitude);
+            } catch {
+              await lookupByCoords(longitude, latitude);
+            }
+          position => {
+            lookupByCoords(position.coords.longitude, position.coords.latitude);
+          },
+          error => {
+            const messages = {
+              1: 'Permission to access location denied.',
+              2: 'Position unavailable.',
+              3: 'Location request timed out.'
+            };
+            resultDiv.textContent = messages[error.code] || 'An unknown error occurred.';
+          }
+          () => {
+            resultDiv.textContent = 'Unable to retrieve your location.';
+          },
+          { timeout: 10000 }
+        );
       });
 
-      locationBtn.addEventListener('keydown', e => {
+      // Add keyboard support (Enter/Space) for location button
+      locationBtn.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           locationBtn.click();
         }
+      });
+
+      // Uppercase postcode input automatically
+      const postcodeInput = document.getElementById('postcode');
+      postcodeInput.addEventListener('input', (e) => {
+        e.target.value = e.target.value.toUpperCase();
       });
     })();
   </script>
