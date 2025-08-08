@@ -89,8 +89,8 @@
       transition: fill 0.2s, stroke 0.2s;
     }
     #location-btn:hover {
-      fill: 004f5c;
-      stroke: 004f5c;
+      fill: #004f5c;
+      stroke: #004f5c;
     }
     #map-tooltip {
       position: absolute;
@@ -123,7 +123,7 @@
       stroke-width: 3px !important;
       transition: fill 0.3s ease, stroke 0.3s ease;
     }
- </style>
+  </style>
 </head>
 <body>
   <div class="container" role="region" aria-label="Senedd constituency lookup">
@@ -131,22 +131,8 @@
     <form id="lookup-form">
       <label for="postcode">Enter your postcode:</label>
       <div style="display:flex; align-items:center;">
-        <input 
-          type="text" 
-          id="postcode" 
-          placeholder="e.g. CF99 1SN" 
-          required 
-          aria-required="true" 
-          aria-describedby="postcode-desc" 
-          autocomplete="postal-code"
-          />
-        <svg 
-          id="location-btn" 
-          role="button" 
-          tabindex="0" 
-          aria-label="Find my current location" 
-          viewBox="0 0 24 24"
-          >
+        <input type="text" id="postcode" placeholder="e.g. CF99 1SN" required aria-required="true" aria-describedby="postcode-desc" />
+        <svg id="location-btn" role="button" tabindex="0" aria-label="Find my current location" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="8" fill="none" />
           <circle cx="12" cy="12" r="4" />
         </svg>
@@ -179,6 +165,22 @@
         .catch(() => {
           resultDiv.textContent = 'Error loading constituency data.';
         });
+
+      function zoomToConstituency(svgElement, constituencyId) {
+        const group = svgElement.querySelector(`#${constituencyId}`);
+        if (!group) return;
+
+        const bbox = group.getBBox();
+
+        // Add padding around bounding box
+        const padding = 10;
+        const x = bbox.x - padding;
+        const y = bbox.y - padding;
+        const width = bbox.width + padding * 2;
+        const height = bbox.height + padding * 2;
+
+        svgElement.setAttribute('viewBox', `${x} ${y} ${width} ${height}`);
+      }
 
       async function lookupByCoords(longitude, latitude) {
         if (!boundaries) {
@@ -213,6 +215,8 @@
 
           const svgElement = svgContainer.querySelector('svg');
           if (svgElement) {
+            zoomToConstituency(svgElement, matchedConstituencyId);
+
             svgElement.querySelectorAll('g[id]').forEach(g => {
               const groupId = g.getAttribute('id');
               g.querySelectorAll('path, polygon, rect, circle').forEach(shape => {
@@ -285,10 +289,10 @@
         }
       }
 
-      form.addEventListener('submit', async e => {
+      form.addEventListener('submit', e => {
         e.preventDefault();
-        const postcode = document.getElementById('postcode').value.trim();
-        await lookupByPostcode(postcode);
+        const postcode = form.postcode.value.trim();
+        if (postcode) lookupByPostcode(postcode);
       });
 
       locationBtn.addEventListener('click', () => {
@@ -296,32 +300,19 @@
           resultDiv.textContent = 'Geolocation is not supported by your browser.';
           return;
         }
-        resultDiv.textContent = 'Getting your location…';
-        navigator.geolocation.getCurrentPosition(
-          async position => {
-            const { longitude, latitude } = position.coords;
-            try {
-              const res = await fetch(`https://api.postcodes.io/postcodes?lon=${longitude}&lat=${latitude}`);
-              const data = await res.json();
+        navigator.geolocation.getCurrentPosition(position => {
+          const { longitude, latitude } = position.coords;
+          lookupByCoords(longitude, latitude);
+        }, () => {
+          resultDiv.textContent = 'Unable to retrieve your location.';
+        });
+      });
 
-              if (data.result?.length) {
-                const postcode = data.result[0].postcode;
-                document.getElementById('postcode').value = postcode;
-              }
-              await lookupByCoords(longitude, latitude);
-            } catch {
-              await lookupByCoords(longitude, latitude);
-            }
-          },
-          error => {
-            const messages = {
-              1: 'Permission to access location denied.',
-              2: 'Position unavailable.',
-              3: 'Location request timed out.'
-            };
-            resultDiv.textContent = messages[error.code] || 'An unknown error occurred.';
-          }
-        );
+      locationBtn.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          locationBtn.click();
+        }
       });
     })();
   </script>
