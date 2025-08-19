@@ -191,7 +191,7 @@
         const match = boundaries.features.find(feature => turf.booleanPointInPolygon(userPoint, feature));
 
         if (!match) {
-          resultDiv.textContent = 'Could not find your constituency.';
+          resultDiv.textContent = 'Could not find your constituency. Try again.';
           return;
         }
 
