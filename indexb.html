@@ -89,14 +89,15 @@
       transition: fill 0.2s, stroke 0.2s;
     }
     #location-btn:hover {
-      fill: #004f5c;
-      stroke: #004f5c;
+      fill: 004f5c;
+      stroke: 004f5c;
     }
     #map-tooltip {
       position: absolute;
       display: none;
       pointer-events: none;
       background: #fff;
+      color: #fff;
       padding: 8px 12px;
       font-size: 1rem;
       font-weight: 600;
@@ -121,13 +122,6 @@
       stroke: #004f5c !important;
       stroke-width: 3px !important;
       transition: fill 0.3s ease, stroke 0.3s ease;
-    }
-    #svg-map svg {
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }
-    #svg-map svg.visible {
-      opacity: 1;
     }
  </style>
 </head>
@@ -197,7 +191,7 @@
         const match = boundaries.features.find(feature => turf.booleanPointInPolygon(userPoint, feature));
 
         if (!match) {
-          resultDiv.textContent = 'Could not find your constituency. Try again.';
+          resultDiv.textContent = 'Could not find your constituency.';
           return;
         }
 
@@ -219,13 +213,6 @@
 
           const svgElement = svgContainer.querySelector('svg');
           if (svgElement) {
-            // Start hidden
-            svgElement.classList.remove('visible');
-            // Delay fade-in
-            setTimeout(() => {
-              svgElement.classList.add('visible');
-            }, 500);
-
             svgElement.querySelectorAll('g[id]').forEach(g => {
               const groupId = g.getAttribute('id');
               g.querySelectorAll('path, polygon, rect, circle').forEach(shape => {
