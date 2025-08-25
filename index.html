@@ -348,23 +348,23 @@
         );
       });
 
-      // ---- NEW: Google Sheet Candidate Fetch ----
-      async function fetchCandidates(constituencyName) {
-        const sheetBaseUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRi9sRoiLV64cVg7RDaBuz67nZHZH0t4woksUDcMLC4tmaJmif_aoCIhFrrIxGkNkjGVpiW39XzDbnB/pub?output=csv&sheet=';
-        const sheetUrl = sheetBaseUrl + encodeURIComponent(constituencyName);
-          // Add cache-busting parameter so updates show immediately
-  fetch(csvUrl + "&cacheBust=" + new Date().getTime())
-    .then(response => response.text())
-    .then(csvText => {
-      const candidates = parseCSV(csvText);
-      displayCandidates(candidates);
-    })
-    .catch(err => {
-      document.getElementById('candidates').innerHTML =
-        `<p style="color:red;">No candidate data found for ${constituencyName}</p>`;
-      console.error(err);
-    });
-}
+   function fetchCandidates(constituencyName) {
+      // Use constituencyName as the sheet name
+      const csvUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vRi9sRoiLV64cVg7RDaBuz67nZHZH0t4woksUDcMLC4tmaJmif_aoCIhFrrIxGkNkjGVpiW39XzDbnB/pub?output=csv&sheet=${encodeURIComponent(constituencyName)}`;
+
+      // Add cache-busting parameter so updates show immediately
+      fetch(csvUrl + "&cacheBust=" + new Date().getTime())
+        .then(response => response.text())
+        .then(csvText => {
+          const candidates = parseCSV(csvText);
+          displayCandidates(candidates);
+        })
+        .catch(err => {
+          document.getElementById('candidates').innerHTML =
+            `<p style="color:red;">No candidate data found for ${constituencyName}</p>`;
+          console.error(err);
+        });
+    }
         try {
           const res = await fetch(sheetUrl);
           if (!res.ok) throw new Error('Could not fetch sheet');
