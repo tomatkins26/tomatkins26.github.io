@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <title>Find Your 2026 Senedd Constituency</title>
   <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+  <!-- Include the Flourish mapping object -->
+  <script src="cons/flourish-tables.html"></script>
   <style>
     html, body {
       height: 100%;
@@ -75,14 +77,6 @@
       font-size: 0.8rem;
       color: #666;
       margin-top: 0.75rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem; /* space between logo and text */
-    }
-    .data-source .data-logo {
-      height: 1em;   /* match text height */
-      width: auto;
-      display: inline-block;
     }
     #location-btn {
       display: inline-block;
@@ -97,21 +91,21 @@
       transition: fill 0.2s, stroke 0.2s;
     }
     #location-btn:hover {
-      fill: 004f5c;
-      stroke: 004f5c;
+      fill: #004f5c;
+      stroke: #004f5c;
     }
     #map-tooltip {
       position: absolute;
       display: none;
       pointer-events: none;
       background: #fff;
-      color: #fff;
+      color: #006473;
       padding: 8px 12px;
       font-size: 1rem;
       font-weight: 600;
       white-space: nowrap;
       transform: translate(-50%, -100%);
-      border: 0 solid #006473;
+      border: 1px solid #006473;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       z-index: 1000;
     }
@@ -131,7 +125,7 @@
       stroke-width: 3px !important;
       transition: fill 0.3s ease, stroke 0.3s ease;
     }
- </style>
+  </style>
 </head>
 <body>
   <div class="container" role="region" aria-label="Senedd constituency lookup">
@@ -147,14 +141,14 @@
           aria-required="true" 
           aria-describedby="postcode-desc" 
           autocomplete="postal-code"
-          />
+        />
         <svg 
           id="location-btn" 
           role="button" 
           tabindex="0" 
           aria-label="Find my current location" 
           viewBox="0 0 24 24"
-          >
+        >
           <circle cx="12" cy="12" r="8" fill="none" />
           <circle cx="12" cy="12" r="4" />
         </svg>
@@ -165,10 +159,7 @@
       <button type="submit">Look up</button>
     </form>
     <div id="result" aria-live="polite"></div>
-    <div class="data-source">
-      Data from Senedd Cymru/Welsh Parliament • Your data is used temporarily for this search and is not recorded. •
-      <img src="images/logo.png" alt="Logo" class="data-logo" />
-    </div>
+    <div class="data-source">Data from Senedd Cymru/Welsh Parliament • Your data is used temporarily for this search and is not recorded.</div>
   </div>
 
   <div id="map-tooltip"></div>
@@ -182,37 +173,25 @@
       let boundaries = null;
       let matchedConstituencyId = null;
 
-      const flourishTables = {
-        "afan-ogwr-rhondda": "https://public.flourish.studio/visualisation/24823817/embed",
-        "bangor-conwy-mn": "https://public.flourish.studio/visualisation/24824719/embed",
-        "blaenau-gwent-caerffili-rhymni": "https://public.flourish.studio/visualisation/24824725/embed",
-        "brycheiniog-tawe-nedd": "https://public.flourish.studio/visualisation/24824729/embed",
-        "caerdydd-ffynnon-taf": "https://public.flourish.studio/visualisation/24824733/embed",
-        "caerdydd-penarth": "https://public.flourish.studio/visualisation/24824736/embed",
-        "casnewydd-islwyn": "https://public.flourish.studio/visualisation/24824747/embed",
-        "ceredigion-penfro": "https://public.flourish.studio/visualisation/24824754/embed",
-        "clwyd": "https://public.flourish.studio/visualisation/24824760/embed",
-        "fflint-wrecsam": "https://public.flourish.studio/visualisation/24824762/embed",
-        "gwynedd-maldwyn": "https://public.flourish.studio/visualisation/24824769/embed",
-        "gwyr-abertawe": "https://public.flourish.studio/visualisation/24824774/embed",
-        "pen-y-bont-bro-morgannwg": "https://public.flourish.studio/visualisation/24824775/embed",
-        "pontypridd-cynon-merthyr": "https://public.flourish.studio/visualisation/24824778/embed",
-        "sir-fynwy-torfaen": "https://public.flourish.studio/visualisation/24824782/embed",
-        "sir-gaerfyrddin": "https://public.flourish.studio/visualisation/24824787/embed"
-      };
-
       fetch('senedd2026.json')
         .then(res => res.json())
         .then(data => { boundaries = data; })
         .catch(() => { resultDiv.textContent = 'Error loading constituency data.'; });
 
       async function lookupByCoords(longitude, latitude) {
-        if (!boundaries) { resultDiv.textContent = 'Constituency data not loaded yet.'; return; }
+        if (!boundaries) {
+          resultDiv.textContent = 'Constituency data not loaded yet.';
+          return;
+        }
         resultDiv.textContent = 'Looking up constituency…';
 
         const userPoint = turf.point([longitude, latitude]);
         const match = boundaries.features.find(feature => turf.booleanPointInPolygon(userPoint, feature));
-        if (!match) { resultDiv.textContent = 'Could not find your constituency.'; return; }
+
+        if (!match) {
+          resultDiv.textContent = 'Could not find your constituency.';
+          return;
+        }
 
         const constituencyName = match.properties.enw_cymrae;
         matchedConstituencyId = constituencyName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
@@ -220,9 +199,8 @@
         resultDiv.innerHTML = `
           <p>Your 2026 Senedd constituency is: <span class="const-highlight">${constituencyName}</span></p>
           <div id="svg-map" style="width:100%; margin-top:1rem;"></div>
+          <div id="flourish-table-container" style="margin-top:1.5rem;"></div>
         `;
-
-        await fetchCandidates(constituencyName);
 
         const svgContainer = document.getElementById('svg-map');
         try {
@@ -270,43 +248,32 @@
             });
 
             const matchElement = svgElement.querySelector(`#${matchedConstituencyId}`);
-            if (matchElement) {
-              matchElement.classList.add('highlighted-const');
-
-              const bbox = matchElement.getBBox();
-              const padding = 20;
-              const viewBoxX = bbox.x - padding;
-              const viewBoxY = bbox.y - padding;
-              const viewBoxWidth = bbox.width + 2 * padding;
-              const viewBoxHeight = bbox.height + 2 * padding;
-              svgElement.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}`);
-            }
-
+            if (matchElement) matchElement.classList.add('highlighted-const');
             svgElement.querySelectorAll('path').forEach(path => {
               path.addEventListener('mouseenter', () => path.style.opacity = 0.7);
               path.addEventListener('mouseleave', () => path.style.opacity = 1);
             });
           }
-
-          // --- Flourish table insertion ---
-          const existingFrame = document.getElementById('flourish-frame');
-          if (existingFrame) existingFrame.remove();
-          const flourishUrl = flourishTables[matchedConstituencyId];
-          if (flourishUrl) {
-            const iframe = document.createElement('iframe');
-            iframe.id = 'flourish-frame';
-            iframe.src = flourishUrl;
-            iframe.style.width = '100%';
-            iframe.style.height = '500px';
-            iframe.frameBorder = 0;
-            iframe.scrolling = 'no';
-            iframe.style.marginTop = '1rem';
-            resultDiv.appendChild(iframe);
-          }
-
         } catch (svgErr) {
           svgContainer.innerHTML = '<p style="color:red;">Could not load map for this constituency.</p>';
           console.error(svgErr);
+        }
+
+        // Display Flourish table
+        const tableContainer = document.getElementById('flourish-table-container');
+        const flourishUrl = window.flourishTables?.[matchedConstituencyId];
+        if (flourishUrl) {
+          tableContainer.innerHTML = `
+            <iframe 
+              src="${flourishUrl}" 
+              style="width:100%; height:500px; border:0;"
+              scrolling="no"
+              frameborder="0"
+              allowfullscreen
+            ></iframe>
+          `;
+        } else {
+          tableContainer.innerHTML = '<p style="color:red;">No table available for this constituency.</p>';
         }
       }
 
@@ -315,13 +282,11 @@
         try {
           const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
           const data = await res.json();
-
           if (!data.result) throw new Error('Invalid postcode');
           if (data.result.country !== 'Wales') {
             resultDiv.textContent = 'Sorry, this tool only supports Welsh postcodes.';
             return;
           }
-
           const { longitude, latitude } = data.result;
           await lookupByCoords(longitude, latitude);
         } catch (err) {
@@ -348,7 +313,6 @@
             try {
               const res = await fetch(`https://api.postcodes.io/postcodes?lon=${longitude}&lat=${latitude}`);
               const data = await res.json();
-
               if (data.result?.length) {
                 const postcode = data.result[0].postcode;
                 document.getElementById('postcode').value = postcode;
@@ -368,41 +332,6 @@
           }
         );
       });
-
-      function fetchCandidates(constituencyName) {
-        const csvUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vRi9sRoiLV64cVg7RDaBuz67nZHZH0t4woksUDcMLC4tmaJmif_aoCIhFrrIxGkNkjGVpiW39XzDbnB/pub?output=csv&sheet=${encodeURIComponent(constituencyName)}`;
-        fetch(csvUrl + "&cacheBust=" + new Date().getTime())
-          .then(response => response.text())
-          .then(csvText => {
-            const candidates = parseCSV(csvText);
-            displayCandidates(candidates);
-          })
-          .catch(err => {
-            console.error(err);
-            resultDiv.innerHTML += `<p style="color:red;">No candidate data found for ${constituencyName}</p>`;
-          });
-      }
-
-      function parseCSV(csvText) {
-        const rows = csvText.trim().split('\n');
-        const headers = rows[0].split(',');
-        const nameIndex = headers.indexOf('Candidate Name') !== -1 ? headers.indexOf('Candidate Name') : 0;
-        const partyIndex = headers.indexOf('Party') !== -1 ? headers.indexOf('Party') : 1;
-        return rows.slice(1).map(row => {
-          const cols = row.split(',');
-          return { name: cols[nameIndex], party: cols[partyIndex] };
-        });
-      }
-
-      function displayCandidates(candidates) {
-        if (!candidates || candidates.length === 0) {
-          resultDiv.innerHTML += '<p>No candidates found for this constituency.</p>';
-          return;
-        }
-        const candidateList = candidates.map(c => `${c.name} (${c.party})`).join(', ');
-        resultDiv.innerHTML += `<p><strong>Candidates:</strong> ${candidateList}</p>`;
-      }
-
     })();
   </script>
 </body>
