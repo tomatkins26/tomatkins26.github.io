@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flourish Table Links - Senedd 2026</title>
+</head>
+<body>
+  <h1>Flourish Table Links for All Constituencies</h1>
+  <p>This page stores all Flourish embed links. Other pages will pull the correct link based on constituency.</p>
+
+  <script>
+    // Object mapping constituency IDs to Flourish embed URLs
+    const flourishTables = {
+      "afan-ogwr-rhondda": "https://flo.uri.sh/visualisation/FL_ID_1/embed",
+      "bangor-conwy-mn": "https://flo.uri.sh/visualisation/FL_ID_2/embed",
+      "blaenau-gwent-caerffili-Rhymni": "https://flo.uri.sh/visualisation/FL_ID_3/embed",
+      "brycheiniog-tawe-nedd": "https://flo.uri.sh/visualisation/FL_ID_4/embed",
+      "caerdydd-ffynnon-taf": "https://flo.uri.sh/visualisation/FL_ID_5/embed",
+      "caerdydd-penarth": "https://flo.uri.sh/visualisation/FL_ID_5/embed",
+      "casnewydd-islwyn": "https://flo.uri.sh/visualisation/FL_ID_6/embed",
+      "ceredigion-penfro": "https://flo.uri.sh/visualisation/FL_ID_7/embed",
+      "clwyd": "https://flo.uri.sh/visualisation/FL_ID_8/embed",
+      "fflint-wrecsam": "https://flo.uri.sh/visualisation/FL_ID_9/embed",
+      "gwynedd-maldwyn": "https://flo.uri.sh/visualisation/FL_ID_10/embed",
+      "gŵyr-abertawe": "https://flo.uri.sh/visualisation/FL_ID_11/embed",
+      "pen-y-bont-bro-morgannwg": "https://flo.uri.sh/visualisation/FL_ID_12/embed",
+      "pontypridd-cynon-merthyr": "https://flo.uri.sh/visualisation/FL_ID_13/embed",
+      "sir-fynwy-torfaen": "https://flo.uri.sh/visualisation/FL_ID_14/embed",
+      "sir-gaerfyrddin": "https://flo.uri.sh/visualisation/FL_ID_15/embed",
+    };
+    // Expose globally so other pages can fetch
+    window.flourishTables = flourishTables;
+  </script>
+
+</body>
+</html>
