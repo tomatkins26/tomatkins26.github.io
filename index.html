@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <title>Find Your 2026 Senedd Constituency</title>
   <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
-  <!-- Include the Flourish mapping object -->
-  <script src="cons/flourish-tables.html"></script>
   <style>
     html, body {
       height: 100%;
@@ -98,14 +96,14 @@
       position: absolute;
       display: none;
       pointer-events: none;
-      background: #fff;
-      color: #006473;
+      background: #006473;
+      color: #fff;
       padding: 8px 12px;
       font-size: 1rem;
       font-weight: 600;
       white-space: nowrap;
       transform: translate(-50%, -100%);
-      border: 1px solid #006473;
+      border: 0 solid #006473;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       z-index: 1000;
     }
@@ -173,10 +171,33 @@
       let boundaries = null;
       let matchedConstituencyId = null;
 
+      const flourishMaps = {
+        "afan-ogwr-rhondda": "https://public.flourish.studio/visualisation/24823817/",
+        "bangor-conwy-mn": "https://public.flourish.studio/visualisation/24824719/",
+        "blaenau-gwent-caerffili-Rhymni": "https://public.flourish.studio/visualisation/24824725/",
+        "brycheiniog-tawe-nedd": "https://public.flourish.studio/visualisation/24824729/",
+        "caerdydd-ffynnon-taf": "https://public.flourish.studio/visualisation/24824733/",
+        "caerdydd-penarth": "https://public.flourish.studio/visualisation/24824736/",
+        "casnewydd-islwyn": "https://public.flourish.studio/visualisation/24824747/",
+        "ceredigion-penfro": "https://public.flourish.studio/visualisation/24824754/",
+        "clwyd": "https://public.flourish.studio/visualisation/24824760/",
+        "fflint-wrecsam": "https://public.flourish.studio/visualisation/24824762/",
+        "gwynedd-maldwyn": "https://public.flourish.studio/visualisation/24824769/",
+        "gŵyr-abertawe": "https://public.flourish.studio/visualisation/24824774/",
+        "pen-y-bont-bro-morgannwg": "https://public.flourish.studio/visualisation/24824775/",
+        "pontypridd-cynon-merthyr": "https://public.flourish.studio/visualisation/24824778/",
+        "sir-fynwy-torfaen": "https://public.flourish.studio/visualisation/24824782/",
+        "sir-gaerfyrddin": "https://public.flourish.studio/visualisation/24824787/"
+      };
+
       fetch('senedd2026.json')
         .then(res => res.json())
-        .then(data => { boundaries = data; })
-        .catch(() => { resultDiv.textContent = 'Error loading constituency data.'; });
+        .then(data => {
+          boundaries = data;
+        })
+        .catch(() => {
+          resultDiv.textContent = 'Error loading constituency data.';
+        });
 
       async function lookupByCoords(longitude, latitude) {
         if (!boundaries) {
@@ -199,10 +220,11 @@
         resultDiv.innerHTML = `
           <p>Your 2026 Senedd constituency is: <span class="const-highlight">${constituencyName}</span></p>
           <div id="svg-map" style="width:100%; margin-top:1rem;"></div>
-          <div id="flourish-table-container" style="margin-top:1.5rem;"></div>
+          <div id="flourish-container" style="margin-top:2rem;"></div>
         `;
 
         const svgContainer = document.getElementById('svg-map');
+
         try {
           const svgRes = await fetch(`svg/${matchedConstituencyId}.svg`);
           if (!svgRes.ok) throw new Error('SVG not found');
@@ -236,7 +258,9 @@
                   tooltip.style.top = `${e.pageY - 16}px`;
                 });
 
-                shape.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+                shape.addEventListener('mouseleave', () => {
+                  tooltip.style.display = 'none';
+                });
               });
             });
 
@@ -249,6 +273,7 @@
 
             const matchElement = svgElement.querySelector(`#${matchedConstituencyId}`);
             if (matchElement) matchElement.classList.add('highlighted-const');
+
             svgElement.querySelectorAll('path').forEach(path => {
               path.addEventListener('mouseenter', () => path.style.opacity = 0.7);
               path.addEventListener('mouseleave', () => path.style.opacity = 1);
@@ -259,21 +284,23 @@
           console.error(svgErr);
         }
 
-        // Display Flourish table
-        const tableContainer = document.getElementById('flourish-table-container');
-        const flourishUrl = window.flourishTables?.[matchedConstituencyId];
+        // Embed Flourish table
+        const flourishContainer = document.getElementById('flourish-container');
+        const flourishUrl = flourishMaps[matchedConstituencyId];
+
         if (flourishUrl) {
-          tableContainer.innerHTML = `
+          flourishContainer.innerHTML = `
+            <p>Browse the candidates in <span class="const-highlight">${constituencyName}</span>:</p>
             <iframe 
               src="${flourishUrl}" 
-              style="width:100%; height:500px; border:0;"
-              scrolling="no"
-              frameborder="0"
-              allowfullscreen
-            ></iframe>
+              frameborder="0" 
+              scrolling="no" 
+              style="width:100%; height:600px; border:0;"
+              allowfullscreen>
+            </iframe>
           `;
         } else {
-          tableContainer.innerHTML = '<p style="color:red;">No table available for this constituency.</p>';
+          flourishContainer.innerHTML = '';
         }
       }
 
@@ -282,11 +309,13 @@
         try {
           const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
           const data = await res.json();
+
           if (!data.result) throw new Error('Invalid postcode');
           if (data.result.country !== 'Wales') {
             resultDiv.textContent = 'Sorry, this tool only supports Welsh postcodes.';
             return;
           }
+
           const { longitude, latitude } = data.result;
           await lookupByCoords(longitude, latitude);
         } catch (err) {
@@ -313,6 +342,7 @@
             try {
               const res = await fetch(`https://api.postcodes.io/postcodes?lon=${longitude}&lat=${latitude}`);
               const data = await res.json();
+
               if (data.result?.length) {
                 const postcode = data.result[0].postcode;
                 document.getElementById('postcode').value = postcode;
