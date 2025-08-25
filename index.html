@@ -1,81 +1,282 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Find Your 2026 Senedd Constituency</title>
-<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<style>
-html,body{margin:0;font-family:Arial,sans-serif;color:#28394e;}
-body{display:flex;flex-direction:column;align-items:flex-start;padding:1rem;max-width:700px;}
-h2{margin-bottom:1rem;}
-input[type="text"]{width: calc(100% - 40px);padding:0.5rem;border:1px solid #006473;}
-button{margin-top:1rem;padding:0.6rem 1rem;font-weight:700;color:white;background:#006473;border:none;cursor:pointer;}
-button:hover{background:#004f5c;}
-#map-container{width:100%;margin-top:1rem;border:1px solid #ccc;min-height:300px;position:relative;}
-.const-highlight{color:#006473;font-weight:700;}
-.candidates{margin-top:1rem;}
-.party-header{font-weight:600;cursor:pointer;margin:0.5rem 0;background:#f5f5f5;padding:0.3rem;border:1px solid #006473;}
-.party-candidates{list-style:disc;margin-left:1rem;display:none;padding-left:1rem;}
-.party-candidates.show{display:block;}
-.data-source{font-size:0.8rem;color:#666;margin-top:0.75rem;}
-#location-btn{display:inline-block;cursor:pointer;margin-left:4px;width:32px;height:32px;fill:#006473;stroke:#006473;stroke-width:2;border-radius:50%;transition:fill 0.2s,stroke 0.2s;}
-#location-btn:hover{fill:#004f5c;stroke:#004f5c;}
-#map-tooltip{position:absolute;display:none;pointer-events:none;background:#fff;color:#fff;padding:8px 12px;font-size:1rem;font-weight:600;white-space:nowrap;transform:translate(-50%,-100%);border:2px solid #006473;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:1000;}
-#map-tooltip::after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border-width:6px 6px 0 6px;border-style:solid;border-color:#fff transparent transparent transparent;}
-.highlighted-const{fill:#006473 !important;stroke:#004f5c !important;stroke-width:3px !important;transition:fill 0.3s ease,stroke 0.3s ease;}
-</style>
+  <meta charset="UTF-8">
+  <title>Find Your 2026 Senedd Constituency</title>
+  <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #28394e;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 1rem;
+      max-width: 700px;
+    }
+    h2 { margin-bottom: 1rem; }
+    input[type="text"] {
+      width: calc(100% - 40px);
+      padding: 0.5rem;
+      border: 1px solid #006473;
+      font-size: 1rem;
+    }
+    button {
+      margin-top: 1rem;
+      padding: 0.6rem 1rem;
+      font-weight: 700;
+      color: white;
+      background: #006473;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    button:hover { background: #004f5c; }
+    #map-container {
+      width: 100%;
+      margin-top: 1rem;
+      border: 1px solid #ccc;
+      min-height: 300px;
+      position: relative;
+    }
+    .const-highlight { color: #006473; font-weight: 700; }
+    .candidates { margin-top: 1rem; }
+    .party-header {
+      font-weight: 600;
+      cursor: pointer;
+      margin: 0.5rem 0;
+      background: #f5f5f5;
+      padding: 0.3rem;
+      border: 1px solid #006473;
+    }
+    .party-candidates { 
+      list-style: disc; 
+      margin-left: 1rem; 
+      display: none; 
+      padding-left: 1rem; 
+    }
+    .party-candidates.show { display: block; }
+    .data-source { font-size: 0.8rem; color: #666; margin-top: 0.75rem; }
+    #location-btn {
+      display: inline-block;
+      cursor: pointer;
+      margin-left: 4px;
+      width: 32px;
+      height: 32px;
+      fill: #006473;
+      stroke: #006473;
+      stroke-width: 2;
+      border-radius: 50%;
+      transition: fill 0.2s, stroke 0.2s;
+    }
+    #location-btn:hover { fill: #004f5c; stroke: #004f5c; }
+    #map-tooltip {
+      position: absolute;
+      display: none;
+      pointer-events: none;
+      background: #fff;
+      color: #fff;
+      padding: 8px 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      white-space: nowrap;
+      transform: translate(-50%, -100%);
+      border: 2px solid #006473;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 1000;
+    }
+    #map-tooltip::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -6px;
+      transform: translateX(-50%);
+      border-width: 6px 6px 0 6px;
+      border-style: solid;
+      border-color: #fff transparent transparent transparent;
+    }
+    .highlighted-const {
+      fill: #006473 !important;
+      stroke: #004f5c !important;
+      stroke-width: 3px !important;
+      transition: fill 0.3s ease, stroke 0.3s ease;
+    }
+  </style>
 </head>
 <body>
-<h2>Find Your 2026 Senedd Constituency</h2>
-<form id="lookup-form" style="display:flex;align-items:center;width:100%;">
-<input type="text" id="postcode" placeholder="e.g. CF99 1SN" required autocomplete="postal-code">
-<svg id="location-btn" role="button" tabindex="0" aria-label="Find my current location" viewBox="0 0 24 24">
-<circle cx="12" cy="12" r="8" fill="none"/>
-<circle cx="12" cy="12" r="4"/>
-</svg>
-<button type="submit" style="flex:0 0 auto;margin-left:8px;">Look up</button>
-</form>
-<div id="map-container" aria-label="Constituency map"></div>
-<div id="constituency-details"></div>
-<div class="data-source">Data from Senedd Cymru/Welsh Parliament • Your data is used temporarily for this search and is not recorded.</div>
-<div id="map-tooltip"></div>
-<script>
-(async function(){
-const form=document.getElementById('lookup-form');
-const postcodeInput=document.getElementById('postcode');
-const mapContainer=document.getElementById('map-container');
-const detailsContainer=document.getElementById('constituency-details');
-const locationBtn=document.getElementById('location-btn');
-const tooltip=document.getElementById('map-tooltip');
-let boundaries=null;
-let matchedConstituencyId=null;
-let candidatesData={};
-let candidatesLoaded=false;
-const candidatesCsvUrl="https://docs.google.com/spreadsheets/d/e/2PACX-1vRi9sRoiLV64cVg7RDaBuz67nZHZH0t4woksUDcMLC4tmaJmif_aoCIhFrrIxGkNkjGVpiW39XzDbnB/pub?output=csv";
-function normaliseId(str){return str?.toLowerCase().replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'-');}
-function canonicalParty(p){const x=p?.trim().toLowerCase()||'';if(x.includes('labour'))return 'Labour';if(x.includes('conservative'))return 'Conservatives';if(x.includes('plaid'))return 'Plaid Cymru';if(x.includes('reform'))return 'Reform';if(x.includes('liberal')||x.includes('lib dem'))return 'Liberal Democrats';return 'Other';}
-async function loadCandidates(){try{const res=await fetch(candidatesCsvUrl);const text=await res.text();const parsed=Papa.parse(text,{header:true,skipEmptyLines:true});candidatesData={};parsed.data.forEach(row=>{const id=normaliseId(row['Constituency ID']||row['Constituency']);const name=row['Candidate Name']||row['name'];const party=canonicalParty(row['Party']||row['party']);if(!id||!name)return;if(!candidatesData[id])candidatesData[id]=[];candidatesData[id].push({name,party});});candidatesLoaded=true;}catch(err){console.error(err);candidatesLoaded=false;}}const loadCandidatesPromise=loadCandidates();
-fetch('senedd2026.json').then(r=>r.json()).then(data=>boundaries=data).catch(()=>alert('Error loading boundaries'));
-async function lookupByPostcode(postcode){try{const res=await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);const data=await res.json();if(!data.result||data.result.country!=='Wales'){alert('Only Welsh postcodes supported');return;}const {longitude,latitude}=data.result;await lookupByCoords(longitude,latitude);}catch(err){console.error(err);alert('Error looking up postcode');}}
-async function lookupByCoords(longitude,latitude){if(!boundaries){alert('Boundaries not loaded yet');return;}const point=turf.point([longitude,latitude]);const match=boundaries.features.find(f=>turf.booleanPointInPolygon(point,f));if(!match){alert('Could not find your constituency');return;}const constituencyName=match.properties.enw_cymraeg||match.properties.const_name||match.properties.name;matchedConstituencyId=normaliseId(constituencyName);
-try{const svgRes=await fetch(`svg/${matchedConstituencyId}.svg`);const svgText=await svgRes.text();mapContainer.innerHTML=svgText;
-const svgElement=mapContainer.querySelector('svg');if(svgElement){svgElement.setAttribute('role','img');svgElement.setAttribute('aria-label',`${constituencyName} constituency map`);
-svgElement.querySelectorAll('g[id]').forEach(g=>{const groupId=g.getAttribute('id');g.querySelectorAll('path,polygon,rect,circle').forEach(shape=>{if(!shape.querySelector('title')){const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent=groupId.replace(/-/g,' ');shape.appendChild(title);}
-shape.addEventListener('mouseenter',e=>{const name=shape.querySelector('title')?.textContent;if(name){tooltip.textContent=name;tooltip.style.background=groupId===matchedConstituencyId?'#006473':'#fff';tooltip.style.color=groupId===matchedConstituencyId?'#fff':'#006473';tooltip.style.borderColor=groupId===matchedConstituencyId?'#004f5c':'#006473';tooltip.style.display='block';}});
-shape.addEventListener('mousemove',e=>{tooltip.style.left=`${e.pageX}px`;tooltip.style.top=`${e.pageY-16}px`;});
-shape.addEventListener('mouseleave',()=>{tooltip.style.display='none';});});});
-svgElement.querySelectorAll('.highlighted-const').forEach(el=>{el.classList.remove('highlighted-const');el.style.fill='';el.style.stroke='';el.style.strokeWidth='';});const matchElement=svgElement.querySelector(`#${matchedConstituencyId}`);if(matchElement)matchElement.classList.add('highlighted-const');}
-}catch(svgErr){mapContainer.innerHTML='<p>Map not available</p>';console.error(svgErr);}
-let descHtml='';try{const descRes=await fetch(`cons/${matchedConstituencyId}.html`);const text=await descRes.text();const parser=new DOMParser();const doc=parser.parseFromString(text,'text/html');descHtml=doc.querySelector('p')?.outerHTML||'<p>No description available</p>';}catch(e){descHtml='<p>No description available</p>';}
-await loadCandidatesPromise;const candidates=candidatesData[matchedConstituencyId]||[];const partyOrder=['Labour','Conservatives','Plaid Cymru','Reform','Liberal Democrats','Other'];let candidateHtml='';partyOrder.forEach(p=>{const list=candidates.filter(c=>c.party===p);if(list.length>0){candidateHtml+=`<div class="party-section"><div class="party-header">${p}</div><ul class="party-candidates">${list.map(c=>`<li>${c.name}</li>`).join('')}</ul></div>`;}});
-if(!candidateHtml)candidateHtml='<p>No candidate data available</p>';
-detailsContainer.innerHTML=`<p>Your 2026 Senedd constituency is: <span class="const-highlight">${constituencyName}</span></p>${descHtml}<h3>Candidates</h3><div class="candidates">${candidateHtml}</div>`;
-detailsContainer.querySelectorAll('.party-header').forEach(h=>{h.onclick=()=>h.nextElementSibling.classList.toggle('show');});}
-form.addEventListener('submit',e=>{e.preventDefault();lookupByPostcode(postcodeInput.value.trim());});
-locationBtn.addEventListener('click',()=>{if(!navigator.geolocation){alert('Geolocation not supported');return;}
-navigator.geolocation.getCurrentPosition(async pos=>{const {longitude,latitude}=pos.coords;await lookupByCoords(longitude,latitude);},err=>{alert(err.message||'Location error');});});
-})();
-</script>
+  <h2>Find Your 2026 Senedd Constituency</h2>
+  <form id="lookup-form" style="display:flex;align-items:center;width:100%;">
+    <input type="text" id="postcode" placeholder="e.g. CF99 1SN" required autocomplete="postal-code">
+    <svg id="location-btn" role="button" tabindex="0" aria-label="Find my current location" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="8" fill="none"/>
+      <circle cx="12" cy="12" r="4"/>
+    </svg>
+    <button type="submit" style="flex:0 0 auto;margin-left:8px;">Look up</button>
+  </form>
+
+  <div id="map-container" aria-label="Constituency map"></div>
+  <div id="constituency-details"></div>
+  <div class="data-source">
+    Data from Senedd Cymru/Welsh Parliament • Your data is used temporarily for this search and is not recorded.
+  </div>
+  <div id="map-tooltip"></div>
+
+  <script>
+    (async function() {
+      const form = document.getElementById('lookup-form');
+      const postcodeInput = document.getElementById('postcode');
+      const mapContainer = document.getElementById('map-container');
+      const detailsContainer = document.getElementById('constituency-details');
+      const locationBtn = document.getElementById('location-btn');
+      const tooltip = document.getElementById('map-tooltip');
+
+      let boundaries = null;
+      let matchedConstituencyId = null;
+      let candidatesData = {};
+      let candidatesLoaded = false;
+
+      const candidatesCsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRi9sRoiLV64cVg7RDaBuz67nZHZH0t4woksUDcMLC4tmaJmif_aoCIhFrrIxGkNkjGVpiW39XzDbnB/pub?output=csv";
+
+      function normaliseId(str) {
+        return str?.toLowerCase().replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'-');
+      }
+
+      function canonicalParty(p) {
+        const x = p?.trim().toLowerCase() || '';
+        if (x.includes('labour')) return 'Labour';
+        if (x.includes('conservative')) return 'Conservatives';
+        if (x.includes('plaid')) return 'Plaid Cymru';
+        if (x.includes('reform')) return 'Reform';
+        if (x.includes('liberal') || x.includes('lib dem')) return 'Liberal Democrats';
+        return 'Other';
+      }
+
+      async function loadCandidates() {
+        try {
+          const res = await fetch(candidatesCsvUrl);
+          const text = await res.text();
+          const parsed = Papa.parse(text,{ header:true, skipEmptyLines:true });
+          candidatesData = {};
+          parsed.data.forEach(row => {
+            const id = normaliseId(row['Constituency ID'] || row['Constituency']);
+            const name = row['Candidate Name'] || row['name'];
+            const party = canonicalParty(row['Party'] || row['party']);
+            if (!id || !name) return;
+            if (!candidatesData[id]) candidatesData[id] = [];
+            candidatesData[id].push({name, party});
+          });
+          candidatesLoaded = true;
+        } catch(e) { console.error(e); candidatesLoaded=false; }
+      }
+      const loadCandidatesPromise = loadCandidates();
+
+      fetch('senedd2026.json')
+        .then(r => r.json())
+        .then(data => boundaries = data)
+        .catch(() => alert('Error loading boundaries'));
+
+      async function lookupByPostcode(postcode) {
+        try {
+          const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
+          const data = await res.json();
+          if(!data.result || data.result.country !== 'Wales') { alert('Only Welsh postcodes supported'); return; }
+          const {longitude, latitude} = data.result;
+          await lookupByCoords(longitude, latitude);
+        } catch(e){ console.error(e); alert('Error looking up postcode'); }
+      }
+
+      async function lookupByCoords(longitude, latitude) {
+        if(!boundaries){ alert('Boundaries not loaded yet'); return; }
+        const point = turf.point([longitude, latitude]);
+        const match = boundaries.features.find(f => turf.booleanPointInPolygon(point,f));
+        if(!match){ alert('Could not find your constituency'); return; }
+        const constituencyName = match.properties.enw_cymraeg || match.properties.const_name || match.properties.name;
+        matchedConstituencyId = normaliseId(constituencyName);
+
+        // Load SVG
+        try {
+          const svgRes = await fetch(`svg/${matchedConstituencyId}.svg`);
+          const svgText = await svgRes.text();
+          mapContainer.innerHTML = svgText;
+
+          const svgElement = mapContainer.querySelector('svg');
+          if(svgElement) svgElement.setAttribute('role','img');
+          if(svgElement) svgElement.setAttribute('aria-label', `${constituencyName} constituency map`);
+
+          // Highlight current constituency
+          svgElement.querySelectorAll('.highlighted-const').forEach(el => {
+            el.classList.remove('highlighted-const');
+          });
+          const matchEl = svgElement.querySelector(`#${matchedConstituencyId}`);
+          if(matchEl) matchEl.classList.add('highlighted-const');
+
+          // Add tooltip for each shape
+          svgElement.querySelectorAll('path, polygon, rect, circle').forEach(shape => {
+            let titleEl = shape.querySelector('title');
+            if(!titleEl) {
+              titleEl = document.createElementNS('http://www.w3.org/2000/svg','title');
+              titleEl.textContent = shape.getAttribute('id')?.replace(/-/g,' ') || '';
+              shape.appendChild(titleEl);
+            }
+
+            shape.addEventListener('mouseenter', e => {
+              const name = titleEl.textContent;
+              tooltip.textContent = name;
+              tooltip.style.display = 'block';
+              tooltip.style.background = shape.id === matchedConstituencyId ? '#006473' : '#fff';
+              tooltip.style.color = shape.id === matchedConstituencyId ? '#fff' : '#006473';
+              tooltip.style.borderColor = shape.id === matchedConstituencyId ? '#004f5c' : '#006473';
+            });
+            shape.addEventListener('mousemove', e => {
+              tooltip.style.left = `${e.pageX}px`;
+              tooltip.style.top = `${e.pageY - 16}px`;
+            });
+            shape.addEventListener('mouseleave', () => { tooltip.style.display='none'; });
+          });
+
+        } catch(e){ mapContainer.innerHTML='<p>Map not available</p>'; console.error(e); }
+
+        // Load description
+        let descHtml='';
+        try {
+          const descRes = await fetch(`cons/${matchedConstituencyId}.html`);
+          const text = await descRes.text();
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(text,'text/html');
+          descHtml = doc.querySelector('p')?.outerHTML || '<p>No description available</p>';
+        } catch(e){ descHtml='<p>No description available</p>'; }
+
+        await loadCandidatesPromise;
+        const candidates = candidatesData[matchedConstituencyId] || [];
+        const partyOrder=['Labour','Conservatives','Plaid Cymru','Reform','Liberal Democrats','Other'];
+        let candidateHtml='';
+        partyOrder.forEach(p=>{
+          const list = candidates.filter(c=>c.party===p);
+          if(list.length>0){
+            candidateHtml += `<div class="party-section"><div class="party-header">${p}</div><ul class="party-candidates">${list.map(c=>`<li>${c.name}</li>`).join('')}</ul></div>`;
+          }
+        });
+        if(!candidateHtml) candidateHtml='<p>No candidate data available</p>';
+        detailsContainer.innerHTML = `<p>Your 2026 Senedd constituency is: <span class="const-highlight">${constituencyName}</span></p>${descHtml}<h3>Candidates</h3><div class="candidates">${candidateHtml}</div>`;
+        detailsContainer.querySelectorAll('.party-header').forEach(h => { 
+          h.onclick = ()=>h.nextElementSibling.classList.toggle('show'); 
+        });
+      }
+
+      form.addEventListener('submit', e => { e.preventDefault(); lookupByPostcode(postcodeInput.value.trim()); });
+      locationBtn.addEventListener('click', () => {
+        if(!navigator.geolocation){ alert('Geolocation not supported'); return; }
+        navigator.geolocation.getCurrentPosition(async pos => {
+          const {longitude, latitude} = pos.coords;
+          await lookupByCoords(longitude, latitude);
+        }, err => alert(err.message || 'Location error'));
+      });
+
+    })();
+  </script>
 </body>
 </html>
