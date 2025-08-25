@@ -74,7 +74,7 @@
     .data-source {
       font-size: 0.8rem;
       color: #666;
-      margin-top: 0.75rem;
+      margin-top: 0.25rem; /* reduced margin */
     }
     #location-btn {
       display: inline-block;
@@ -122,6 +122,14 @@
       stroke: #004f5c !important;
       stroke-width: 3px !important;
       transition: fill 0.3s ease, stroke 0.3s ease;
+    }
+
+    /* Flourish adjustments */
+    #flourish-container p {
+      margin: 0 0 0.5rem 0; /* smaller bottom margin */
+    }
+    #flourish-container iframe {
+      margin-bottom: 0; /* remove extra spacing below iframe */
     }
   </style>
 </head>
@@ -172,22 +180,22 @@
       let matchedConstituencyId = null;
 
       const flourishMaps = {
-        "afan-ogwr-rhondda": "https://public.flourish.studio/visualisation/24823817/embed",
-        "bangor-conwy-mn": "https://public.flourish.studio/visualisation/24824719/embed",
-        "blaenau-gwent-caerffili-Rhymni": "https://public.flourish.studio/visualisation/24824725/embed",
-        "brycheiniog-tawe-nedd": "https://public.flourish.studio/visualisation/24824729/embed",
-        "caerdydd-ffynnon-taf": "https://public.flourish.studio/visualisation/24824733/embed",
-        "caerdydd-penarth": "https://public.flourish.studio/visualisation/24824736/embed",
-        "casnewydd-islwyn": "https://public.flourish.studio/visualisation/24824747/embed",
-        "ceredigion-penfro": "https://public.flourish.studio/visualisation/24824754/embed",
-        "clwyd": "https://public.flourish.studio/visualisation/24824760/embed",
-        "fflint-wrecsam": "https://public.flourish.studio/visualisation/24824762/embed",
-        "gwynedd-maldwyn": "https://public.flourish.studio/visualisation/24824769/embed",
-        "gŵyr-abertawe": "https://public.flourish.studio/visualisation/24824774/embed",
-        "pen-y-bont-bro-morgannwg": "https://public.flourish.studio/visualisation/24824775/embed",
-        "pontypridd-cynon-merthyr": "https://public.flourish.studio/visualisation/24824778/embed",
-        "sir-fynwy-torfaen": "https://public.flourish.studio/visualisation/24824782/embed",
-        "sir-gaerfyrddin": "https://public.flourish.studio/visualisation/24824787/embed"
+        "afan-ogwr-rhondda": "https://public.flourish.studio/visualisation/24823817/",
+        "bangor-conwy-mn": "https://public.flourish.studio/visualisation/24824719/",
+        "blaenau-gwent-caerffili-Rhymni": "https://public.flourish.studio/visualisation/24824725/",
+        "brycheiniog-tawe-nedd": "https://public.flourish.studio/visualisation/24824729/",
+        "caerdydd-ffynnon-taf": "https://public.flourish.studio/visualisation/24824733/",
+        "caerdydd-penarth": "https://public.flourish.studio/visualisation/24824736/",
+        "casnewydd-islwyn": "https://public.flourish.studio/visualisation/24824747/",
+        "ceredigion-penfro": "https://public.flourish.studio/visualisation/24824754/",
+        "clwyd": "https://public.flourish.studio/visualisation/24824760/",
+        "fflint-wrecsam": "https://public.flourish.studio/visualisation/24824762/",
+        "gwynedd-maldwyn": "https://public.flourish.studio/visualisation/24824769/",
+        "gŵyr-abertawe": "https://public.flourish.studio/visualisation/24824774/",
+        "pen-y-bont-bro-morgannwg": "https://public.flourish.studio/visualisation/24824775/",
+        "pontypridd-cynon-merthyr": "https://public.flourish.studio/visualisation/24824778/",
+        "sir-fynwy-torfaen": "https://public.flourish.studio/visualisation/24824782/",
+        "sir-gaerfyrddin": "https://public.flourish.studio/visualisation/24824787/"
       };
 
       fetch('senedd2026.json')
@@ -220,7 +228,7 @@
         resultDiv.innerHTML = `
           <p>Your 2026 Senedd constituency is: <span class="const-highlight">${constituencyName}</span></p>
           <div id="svg-map" style="width:100%; margin-top:1rem;"></div>
-          <div id="flourish-container" style="margin-top:2rem;"></div>
+          <div id="flourish-container" style="margin-top:1rem;"></div>
         `;
 
         const svgContainer = document.getElementById('svg-map');
