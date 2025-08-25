@@ -180,9 +180,9 @@
       // ---- Google Sheets integration settings ----
       // Replace SPREADSHEET_ID and SHEET_NAME with your values.
       // The sheet must be "Published to the web".
-      const SHEET_ID = 'SPREADSHEET_ID_HERE';
+      const SHEET_ID = 'senedd candidates';
       const SHEET_NAME = 'Sheet1';
-      const candidatesCsvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}&_ts=${Date.now()}`;
+      const candidatesCsvUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vRi9sRoiLV64cVg7RDaBuz67nZHZH0t4woksUDcMLC4tmaJmif_aoCIhFrrIxGkNkjGVpiW39XzDbnB/pubhtml?gid=0&single=true;
 
       let candidatesData = {}; // { constId: [{name, party}] }
       let candidatesLoaded = false;
