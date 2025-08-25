@@ -214,6 +214,8 @@
           <div id="svg-map" style="width:100%; margin-top:1rem;"></div>
         `;
 
+        await fetchCandidates(constituencyName); // <-- NEW: fetch candidates from Google Sheet
+
         const svgContainer = document.getElementById('svg-map');
 
         try {
@@ -345,6 +347,43 @@
           }
         );
       });
+
+      // ---- NEW: Google Sheet Candidate Fetch ----
+      async function fetchCandidates(constituencyName) {
+        const sheetBaseUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRi9sRoiLV64cVg7RDaBuz67nZHZH0t4woksUDcMLC4tmaJmif_aoCIhFrrIxGkNkjGVpiW39XzDbnB/pub?output=csv&sheet=';
+        const sheetUrl = sheetBaseUrl + encodeURIComponent(constituencyName);
+        try {
+          const res = await fetch(sheetUrl);
+          if (!res.ok) throw new Error('Could not fetch sheet');
+          const csvText = await res.text();
+          const candidates = parseCSV(csvText);
+          displayCandidates(candidates);
+        } catch (err) {
+          console.error(err);
+          resultDiv.innerHTML += `<p>Could not load candidate information.</p>`;
+        }
+      }
+
+      function parseCSV(csvText) {
+        const rows = csvText.trim().split('\n');
+        const headers = rows[0].split(',');
+        const nameIndex = headers.indexOf('Candidate Name') !== -1 ? headers.indexOf('Candidate Name') : 0;
+        const partyIndex = headers.indexOf('Party') !== -1 ? headers.indexOf('Party') : 1;
+        return rows.slice(1).map(row => {
+          const cols = row.split(',');
+          return { name: cols[nameIndex], party: cols[partyIndex] };
+        });
+      }
+
+      function displayCandidates(candidates) {
+        if (!candidates || candidates.length === 0) {
+          resultDiv.innerHTML += '<p>No candidates found for this constituency.</p>';
+          return;
+        }
+        const candidateList = candidates.map(c => `${c.name} (${c.party})`).join(', ');
+        resultDiv.innerHTML += `<p><strong>Candidates:</strong> ${candidateList}</p>`;
+      }
+
     })();
   </script>
 </body>
