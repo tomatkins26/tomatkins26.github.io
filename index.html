@@ -214,7 +214,7 @@
           <div id="svg-map" style="width:100%; margin-top:1rem;"></div>
         `;
 
-        await fetchCandidates(constituencyName); // <-- NEW: fetch candidates from Google Sheet
+        await fetchCandidates(constituencyName); // <-- updated fetchCandidates
 
         const svgContainer = document.getElementById('svg-map');
 
@@ -348,33 +348,18 @@
         );
       });
 
-   function fetchCandidates(constituencyName) {
-      // Use constituencyName as the sheet name
-      const csvUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vRi9sRoiLV64cVg7RDaBuz67nZHZH0t4woksUDcMLC4tmaJmif_aoCIhFrrIxGkNkjGVpiW39XzDbnB/pub?output=csv&sheet=${encodeURIComponent(constituencyName)}`;
-
-      // Add cache-busting parameter so updates show immediately
-      fetch(csvUrl + "&cacheBust=" + new Date().getTime())
-        .then(response => response.text())
-        .then(csvText => {
-          const candidates = parseCSV(csvText);
-          displayCandidates(candidates);
-        })
-        .catch(err => {
-          document.getElementById('candidates').innerHTML =
-            `<p style="color:red;">No candidate data found for ${constituencyName}</p>`;
-          console.error(err);
-        });
-    }
-        try {
-          const res = await fetch(sheetUrl);
-          if (!res.ok) throw new Error('Could not fetch sheet');
-          const csvText = await res.text();
-          const candidates = parseCSV(csvText);
-          displayCandidates(candidates);
-        } catch (err) {
-          console.error(err);
-          resultDiv.innerHTML += `<p>Could not load candidate information.</p>`;
-        }
+      function fetchCandidates(constituencyName) {
+        const csvUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vRi9sRoiLV64cVg7RDaBuz67nZHZH0t4woksUDcMLC4tmaJmif_aoCIhFrrIxGkNkjGVpiW39XzDbnB/pub?output=csv&sheet=${encodeURIComponent(constituencyName)}`;
+        fetch(csvUrl + "&cacheBust=" + new Date().getTime())
+          .then(response => response.text())
+          .then(csvText => {
+            const candidates = parseCSV(csvText);
+            displayCandidates(candidates);
+          })
+          .catch(err => {
+            console.error(err);
+            resultDiv.innerHTML += `<p style="color:red;">No candidate data found for ${constituencyName}</p>`;
+          });
       }
 
       function parseCSV(csvText) {
