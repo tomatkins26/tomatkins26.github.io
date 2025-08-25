@@ -182,29 +182,37 @@
       let boundaries = null;
       let matchedConstituencyId = null;
 
+      const flourishTables = {
+        "afan-ogwr-rhondda": "https://public.flourish.studio/visualisation/24823817/embed",
+        "bangor-conwy-mn": "https://public.flourish.studio/visualisation/24824719/embed",
+        "blaenau-gwent-caerffili-rhymni": "https://public.flourish.studio/visualisation/24824725/embed",
+        "brycheiniog-tawe-nedd": "https://public.flourish.studio/visualisation/24824729/embed",
+        "caerdydd-ffynnon-taf": "https://public.flourish.studio/visualisation/24824733/embed",
+        "caerdydd-penarth": "https://public.flourish.studio/visualisation/24824736/embed",
+        "casnewydd-islwyn": "https://public.flourish.studio/visualisation/24824747/embed",
+        "ceredigion-penfro": "https://public.flourish.studio/visualisation/24824754/embed",
+        "clwyd": "https://public.flourish.studio/visualisation/24824760/embed",
+        "fflint-wrecsam": "https://public.flourish.studio/visualisation/24824762/embed",
+        "gwynedd-maldwyn": "https://public.flourish.studio/visualisation/24824769/embed",
+        "gwyr-abertawe": "https://public.flourish.studio/visualisation/24824774/embed",
+        "pen-y-bont-bro-morgannwg": "https://public.flourish.studio/visualisation/24824775/embed",
+        "pontypridd-cynon-merthyr": "https://public.flourish.studio/visualisation/24824778/embed",
+        "sir-fynwy-torfaen": "https://public.flourish.studio/visualisation/24824782/embed",
+        "sir-gaerfyrddin": "https://public.flourish.studio/visualisation/24824787/embed"
+      };
+
       fetch('senedd2026.json')
         .then(res => res.json())
-        .then(data => {
-          boundaries = data;
-        })
-        .catch(() => {
-          resultDiv.textContent = 'Error loading constituency data.';
-        });
+        .then(data => { boundaries = data; })
+        .catch(() => { resultDiv.textContent = 'Error loading constituency data.'; });
 
       async function lookupByCoords(longitude, latitude) {
-        if (!boundaries) {
-          resultDiv.textContent = 'Constituency data not loaded yet.';
-          return;
-        }
+        if (!boundaries) { resultDiv.textContent = 'Constituency data not loaded yet.'; return; }
         resultDiv.textContent = 'Looking up constituency…';
 
         const userPoint = turf.point([longitude, latitude]);
         const match = boundaries.features.find(feature => turf.booleanPointInPolygon(userPoint, feature));
-
-        if (!match) {
-          resultDiv.textContent = 'Could not find your constituency.';
-          return;
-        }
+        if (!match) { resultDiv.textContent = 'Could not find your constituency.'; return; }
 
         const constituencyName = match.properties.enw_cymrae;
         matchedConstituencyId = constituencyName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
@@ -214,10 +222,9 @@
           <div id="svg-map" style="width:100%; margin-top:1rem;"></div>
         `;
 
-        await fetchCandidates(constituencyName); // <-- updated fetchCandidates
+        await fetchCandidates(constituencyName);
 
         const svgContainer = document.getElementById('svg-map');
-
         try {
           const svgRes = await fetch(`svg/${matchedConstituencyId}.svg`);
           if (!svgRes.ok) throw new Error('SVG not found');
@@ -251,9 +258,7 @@
                   tooltip.style.top = `${e.pageY - 16}px`;
                 });
 
-                shape.addEventListener('mouseleave', () => {
-                  tooltip.style.display = 'none';
-                });
+                shape.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
               });
             });
 
@@ -268,7 +273,6 @@
             if (matchElement) {
               matchElement.classList.add('highlighted-const');
 
-              // Zoom into the selected constituency
               const bbox = matchElement.getBBox();
               const padding = 20;
               const viewBoxX = bbox.x - padding;
@@ -283,6 +287,23 @@
               path.addEventListener('mouseleave', () => path.style.opacity = 1);
             });
           }
+
+          // --- Flourish table insertion ---
+          const existingFrame = document.getElementById('flourish-frame');
+          if (existingFrame) existingFrame.remove();
+          const flourishUrl = flourishTables[matchedConstituencyId];
+          if (flourishUrl) {
+            const iframe = document.createElement('iframe');
+            iframe.id = 'flourish-frame';
+            iframe.src = flourishUrl;
+            iframe.style.width = '100%';
+            iframe.style.height = '500px';
+            iframe.frameBorder = 0;
+            iframe.scrolling = 'no';
+            iframe.style.marginTop = '1rem';
+            resultDiv.appendChild(iframe);
+          }
+
         } catch (svgErr) {
           svgContainer.innerHTML = '<p style="color:red;">Could not load map for this constituency.</p>';
           console.error(svgErr);
