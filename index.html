@@ -207,6 +207,33 @@
           resultDiv.textContent = 'Error loading constituency data.';
         });
 
+      async function loadConstituencyInfo(constituencyId) {
+        const url = `/cons/${constituencyId}.html`;
+        try {
+          const res = await fetch(url);
+          if (!res.ok) return;
+          const html = await res.text();
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const headings = doc.querySelectorAll('h2');
+          let keyStatsHeading;
+          headings.forEach(h => {
+            if (h.textContent.trim().toLowerCase().includes('key stats')) {
+              keyStatsHeading = h;
+            }
+          });
+          if (keyStatsHeading) {
+            const firstLi = keyStatsHeading.nextElementSibling?.querySelector('li');
+            if (firstLi) {
+              document.getElementById('constituency-info').innerHTML =
+                `<p><strong>About this constituency:</strong> ${firstLi.textContent}</p>`;
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching constituency page:', err);
+        }
+      }
+
       async function lookupByCoords(longitude, latitude) {
         if (!boundaries) {
           resultDiv.textContent = 'Constituency data not loaded yet.';
@@ -228,6 +255,7 @@
         resultDiv.innerHTML = `
           <p>Your 2026 Senedd constituency is: <span class="const-highlight">${constituencyName}</span></p>
           <div id="svg-map" style="width:100%; margin-top:1rem;"></div>
+          <div id="constituency-info" style="margin-top:1rem;"></div>
           <div id="flourish-container" style="margin-top:1rem;"></div>
         `;
 
@@ -291,6 +319,9 @@
           svgContainer.innerHTML = '<p style="color:red;">Could not load map for this constituency.</p>';
           console.error(svgErr);
         }
+
+        // Add constituency info
+        await loadConstituencyInfo(matchedConstituencyId);
 
         // Embed Flourish table
         const flourishContainer = document.getElementById('flourish-container');
