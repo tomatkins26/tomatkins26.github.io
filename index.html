@@ -204,22 +204,22 @@
       };
 
       const constituencySummaries = {
-        "afan-ogwr-rhondda": "The new Afan Ogwr Rhondda constituency brings together Aberafan Maesteg and Rhondda and Ogmore.",
-        "bangor-conwy-mn": "The new Bangor Conwy Môn constituency was created by combining Bangor Aberconwy and Ynys Môn.",
-        "blaenau-gwent-caerffili-rhymni": "The new Blaenau Gwent Caerffili Rhymni constituency combines the former Blaenau Gwent and Rhymney constituency with Caerphilly.",
-        "brycheiniog-tawe-nedd": "The new Brycheiniog Tawe Nedd constituency merges Brecon, Radnor and Cwm Tawe with Neath and Swansea East.",
-        "caerdydd-ffynnon-taf": "The new Caerdydd Ffynnon Taf constituency brings together the Cardiff North and Cardiff East constituencies.",
-        "caerdydd-penarth": "The new Caerdydd Penarth constituency combines Cardiff West with Cardiff South and Penarth.",
-        "casnewydd-islwyn": "The new Casnewydd Islwyn constituency is formed from Newport East and Newport West and Islwyn.",
-        "ceredigion-penfro": "Ceredigion Penfro combines the constituencies of Ceredigion Preseli and Mid and South Pembrokeshire.",
-        "clwyd": "The new Clwyd constituency merges Clwyd East and Clwyd North.",
-        "fflint-wrecsam": "Fflint Wrecsam consists of the former Alyn and Deeside and Wrexham constituencies.",
-        "gwynedd-maldwyn": "The new Gwynedd Maldwyn constituency is formed by merging Dwyfor Meirionnydd with Montgomeryshire and Glyndŵr.",
-        "gyr-abertawe": "The new Gŵyr Abertawe constituency is formed from Swansea West and Gower.",
-        "pen-y-bont-bro-morgannwg": "The new Pen-y-bont Bro Morgannwg constituency is formed from the Westminster constituencies of Bridgend and Vale of Glamorgan.",
-        "pontypridd-cynon-merthyr": "The new Pontypridd Cynon Merthyr constituency is formed by uniting the Westminster constituencies of Pontypridd and Merthyr Tydfil and Aberdare.",
-        "sir-fynwy-torfaen": "The new Sir Fynwy Torfaen constituency is created by merging Monmouthshire and Torfaen.",
-        "sir-gaerfyrddin": "The new Sir Gaerfyrddin constituency brings together the Westminster constituencies of Caerfyrddin (Carmarthen) and Llanelli."
+        "afan-ogwr-rhondda": "The new <span class="const-highlight">Afan Ogwr Rhondda</span> constituency brings together Aberafan Maesteg and Rhondda and Ogmore.",
+        "bangor-conwy-mn": "The new <span class="const-highlight">Bangor Conwy Môn</span> constituency was created by combining Bangor Aberconwy and Ynys Môn.",
+        "blaenau-gwent-caerffili-rhymni": "The new <span class="const-highlight">Blaenau Gwent Caerffili Rhymni</span> constituency combines the former Blaenau Gwent and Rhymney constituency with Caerphilly.",
+        "brycheiniog-tawe-nedd": "The new <span class="const-highlight">Brycheiniog Tawe Nedd</span> constituency merges Brecon, Radnor and Cwm Tawe with Neath and Swansea East.",
+        "caerdydd-ffynnon-taf": "The new <span class="const-highlight">Caerdydd Ffynnon Taf</span> constituency brings together the Cardiff North and Cardiff East constituencies.",
+        "caerdydd-penarth": "The new <span class="const-highlight">Caerdydd Penarth</span> constituency combines Cardiff West with Cardiff South and Penarth.",
+        "casnewydd-islwyn": "The new <span class="const-highlight">Casnewydd Islwyn</span> constituency is formed from Newport East and Newport West and Islwyn.",
+        "ceredigion-penfro": "<span class="const-highlight">Ceredigion Penfro</span> combines the constituencies of Ceredigion Preseli and Mid and South Pembrokeshire.",
+        "clwyd": "The new <span class="const-highlight">Clwyd</span> constituency merges Clwyd East and Clwyd North.",
+        "fflint-wrecsam": "<span class="const-highlight">Fflint Wrecsam</span> consists of the former Alyn and Deeside and Wrexham constituencies.",
+        "gwynedd-maldwyn": "The new <span class="const-highlight">Gwynedd Maldwyn</span> constituency is formed by merging Dwyfor Meirionnydd with Montgomeryshire and Glyndŵr.",
+        "gyr-abertawe": "The new <span class="const-highlight">Gŵyr Abertawe</span> constituency is formed from Swansea West and Gower.",
+        "pen-y-bont-bro-morgannwg": "The new <span class="const-highlight">Pen-y-bont Bro Morgannwg</span> constituency is formed from the Westminster constituencies of Bridgend and Vale of Glamorgan.",
+        "pontypridd-cynon-merthyr": "The new <span class="const-highlight">Pontypridd Cynon Merthyr</span> constituency is formed by uniting the Westminster constituencies of Pontypridd and Merthyr Tydfil and Aberdare.",
+        "sir-fynwy-torfaen": "The new <span class="const-highlight">Sir Fynwy Torfaen</span> constituency is created by merging Monmouthshire and Torfaen.",
+        "sir-gaerfyrddin": "The new <span class="const-highlight">Sir Gaerfyrddin</span> constituency brings together the Westminster constituencies of Caerfyrddin (Carmarthen) and Llanelli."
       };
 
       fetch('senedd2026.json')
@@ -325,7 +325,7 @@ if (summary) {
           flourishContainer.innerHTML = `
             <p>Six MSs will now be elected in each constituency, meaning you'll have six MSs representing you.</p>
             <div style="height: 0.7rem;"></div>
-            <p> Browse the candidates in your area: </p>
+            <p><span class="const-highlight">Browse the candidates in your area.</span></p>
             <iframe 
               src="${flourishUrl}" 
               frameborder="0" 
