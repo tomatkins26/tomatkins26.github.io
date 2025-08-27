@@ -74,7 +74,7 @@
     .data-source {
       font-size: 0.8rem;
       color: #666;
-      margin-top: 0.25rem; /* reduced margin */
+      margin-top: 0.25rem;
     }
     #location-btn {
       display: inline-block;
@@ -124,12 +124,11 @@
       transition: fill 0.3s ease, stroke 0.3s ease;
     }
 
-    /* Flourish adjustments */
     #flourish-container p {
-      margin: 0 0 0.5rem 0; /* smaller bottom margin */
+      margin: 0 0 0.5rem 0;
     }
     #flourish-container iframe {
-      margin-bottom: 0; /* remove extra spacing below iframe */
+      margin-bottom: 0;
     }
   </style>
 </head>
@@ -207,7 +206,7 @@
           resultDiv.textContent = 'Error loading constituency data.';
         });
 
-      // ===== FIXED loadConstituencyInfo FUNCTION =====
+      // ===== UPDATED loadConstituencyInfo FUNCTION =====
       async function loadConstituencyInfo(constituencyId) {
         const url = `/cons/${constituencyId}.html`;
         try {
@@ -215,33 +214,13 @@
           if (!res.ok) return;
           const html = await res.text();
 
-          // Parse the fetched HTML
           const parser = new DOMParser();
           const doc = parser.parseFromString(html, 'text/html');
 
-          // Find the <h2> that contains "Key Stats"
-          const headings = doc.querySelectorAll('h2');
-          let keyStatsHeading;
-          headings.forEach(h => {
-            if (h.textContent.trim().toLowerCase().includes('key stats')) {
-              keyStatsHeading = h;
-            }
-          });
-
-          if (keyStatsHeading) {
-            // Find the nearest <ul> after the Key Stats heading
-            let ul = keyStatsHeading.nextElementSibling;
-            while (ul && ul.tagName.toLowerCase() !== 'ul') {
-              ul = ul.nextElementSibling;
-            }
-
-            if (ul) {
-              const firstLi = ul.querySelector('li');
-              if (firstLi) {
-                document.getElementById('constituency-info').innerHTML =
-                  `<p><strong>About this constituency:</strong> ${firstLi.textContent}</p>`;
-              }
-            }
+          const summaryDiv = doc.getElementById('constituency-summary');
+          if (summaryDiv) {
+            document.getElementById('constituency-info').innerHTML =
+              `<p><strong>About this constituency:</strong> ${summaryDiv.textContent.trim()}</p>`;
           }
         } catch (err) {
           console.error('Error fetching constituency page:', err);
