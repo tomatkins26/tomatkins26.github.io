@@ -311,14 +311,15 @@
           console.error(svgErr);
         }
 
-        const summary = constituencySummaries[matchedConstituencyId];
+       const summary = constituencySummaries[matchedConstituencyId];
 if (summary) {
   infoDiv.innerHTML = `
     <hr style="border: none; border-top: 1px solid #ccc; margin: 1rem 0;">
     <p>${summary}</p>
-        } else {
-          infoDiv.innerHTML = '';
-        }
+  `;
+} else {
+  infoDiv.innerHTML = '';
+}
 
         // Embed Flourish table
         const flourishUrl = flourishMaps[matchedConstituencyId];
