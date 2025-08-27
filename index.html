@@ -314,7 +314,7 @@
         // Add summary
         const summary = constituencySummaries[matchedConstituencyId];
         if (summary) {
-          infoDiv.innerHTML = `<p><strong>About this constituency:</strong> ${summary}</p>`;
+          infoDiv.innerHTML = `<p>${summary}</p>`;
         } else {
           infoDiv.innerHTML = '';
         }
@@ -323,7 +323,7 @@
         const flourishUrl = flourishMaps[matchedConstituencyId];
         if (flourishUrl) {
           flourishContainer.innerHTML = `
-            <p>Browse the candidates in <span class="const-highlight">${constituencyName}</span>:</p>
+            <p>Browse the candidates in ${constituencyName}:</p>
             <iframe 
               src="${flourishUrl}" 
               frameborder="0" 
