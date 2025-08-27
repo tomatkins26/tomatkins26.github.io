@@ -123,7 +123,6 @@
       stroke-width: 3px !important;
       transition: fill 0.3s ease, stroke 0.3s ease;
     }
-
     #flourish-container p {
       margin: 0 0 0.5rem 0;
     }
@@ -163,7 +162,13 @@
       </div>
       <button type="submit">Look up</button>
     </form>
+
+    <!-- Always-present containers -->
     <div id="result" aria-live="polite"></div>
+    <div id="svg-map" style="width:100%; margin-top:1rem;"></div>
+    <div id="constituency-info" style="margin-top:1rem;"></div>
+    <div id="flourish-container" style="margin-top:1rem;"></div>
+
     <div class="data-source">Data from Senedd Cymru/Welsh Parliament • Your data is used temporarily for this search and is not recorded.</div>
   </div>
 
@@ -173,6 +178,9 @@
     (function () {
       const form = document.getElementById('lookup-form');
       const resultDiv = document.getElementById('result');
+      const svgContainer = document.getElementById('svg-map');
+      const infoDiv = document.getElementById('constituency-info');
+      const flourishContainer = document.getElementById('flourish-container');
       const locationBtn = document.getElementById('location-btn');
       const tooltip = document.getElementById('map-tooltip');
       let boundaries = null;
@@ -199,14 +207,9 @@
 
       fetch('senedd2026.json')
         .then(res => res.json())
-        .then(data => {
-          boundaries = data;
-        })
-        .catch(() => {
-          resultDiv.textContent = 'Error loading constituency data.';
-        });
+        .then(data => boundaries = data)
+        .catch(() => resultDiv.textContent = 'Error loading constituency data.');
 
-      // ===== UPDATED loadConstituencyInfo FUNCTION =====
       async function loadConstituencyInfo(constituencyId) {
         const url = `/cons/${constituencyId}.html`;
         try {
@@ -219,8 +222,7 @@
 
           const summaryDiv = doc.getElementById('constituency-summary');
           if (summaryDiv) {
-            document.getElementById('constituency-info').innerHTML =
-              `<p><strong>About this constituency:</strong> ${summaryDiv.textContent.trim()}</p>`;
+            infoDiv.innerHTML = `<p><strong>About this constituency:</strong> ${summaryDiv.textContent.trim()}</p>`;
           }
         } catch (err) {
           console.error('Error fetching constituency page:', err);
@@ -235,7 +237,7 @@
         resultDiv.textContent = 'Looking up constituency…';
 
         const userPoint = turf.point([longitude, latitude]);
-        const match = boundaries.features.find(feature => turf.booleanPointInPolygon(userPoint, feature));
+        const match = boundaries.features.find(f => turf.booleanPointInPolygon(userPoint, f));
 
         if (!match) {
           resultDiv.textContent = 'Could not find your constituency.';
@@ -245,15 +247,12 @@
         const constituencyName = match.properties.enw_cymrae;
         matchedConstituencyId = constituencyName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
 
-        resultDiv.innerHTML = `
-          <p>Your 2026 Senedd constituency is: <span class="const-highlight">${constituencyName}</span></p>
-          <div id="svg-map" style="width:100%; margin-top:1rem;"></div>
-          <div id="constituency-info" style="margin-top:1rem;"></div>
-          <div id="flourish-container" style="margin-top:1rem;"></div>
-        `;
+        resultDiv.innerHTML = `<p>Your 2026 Senedd constituency is: <span class="const-highlight">${constituencyName}</span></p>`;
+        svgContainer.innerHTML = '';
+        infoDiv.innerHTML = '';
+        flourishContainer.innerHTML = '';
 
-        const svgContainer = document.getElementById('svg-map');
-
+        // Load SVG map (same as before)
         try {
           const svgRes = await fetch(`svg/${matchedConstituencyId}.svg`);
           if (!svgRes.ok) throw new Error('SVG not found');
@@ -317,9 +316,7 @@
         await loadConstituencyInfo(matchedConstituencyId);
 
         // Embed Flourish table
-        const flourishContainer = document.getElementById('flourish-container');
         const flourishUrl = flourishMaps[matchedConstituencyId];
-
         if (flourishUrl) {
           flourishContainer.innerHTML = `
             <p>Browse the candidates in <span class="const-highlight">${constituencyName}</span>:</p>
@@ -331,8 +328,6 @@
               allowfullscreen>
             </iframe>
           `;
-        } else {
-          flourishContainer.innerHTML = '';
         }
       }
 
