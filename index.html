@@ -247,7 +247,6 @@
 matchedConstituencyId = constituencyName.trim().replace(/[ŵô]/g, '').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
         console.log('Constituency name:', constituencyName);
         console.log('Normalized ID:', matchedConstituencyId);
-        console.log('Flourish keys:', Object.keys(flourishMaps));
         
         resultDiv.innerHTML = `<p>Your 2026 Senedd constituency is: <span class="const-highlight">${constituencyName}</span></p>`;
         svgContainer.innerHTML = '';
