@@ -320,12 +320,12 @@ if (summary) {
 } else {
   infoDiv.innerHTML = '';
 }
-
-        // Embed Flourish table
+  // Embed Flourish table
         const flourishUrl = flourishMaps[matchedConstituencyId];
         if (flourishUrl) {
           flourishContainer.innerHTML = `
-            <p>Six MSs will be elected in each of these new constituencies, meaning every voter in Wales will have six MSs representing them. Browse your candidates:</p>
+            <p>Six MSs will be elected in each new constituency, meaning every voter in Wales will have six MSs representing them.</p>
+            <p> Browse your candidates: </p>
             <iframe 
               src="${flourishUrl}" 
               frameborder="0" 
