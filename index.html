@@ -245,11 +245,7 @@
         const constituencyName = match.properties.enw_cymrae;
 
         // Normalize name to match keys (removes accents)
-        matchedConstituencyId = constituencyName
-          .toLowerCase()
-          .normalize('NFD').replace(/[\u0300-\u036f]/g, '')  // strip accents
-          .replace(/\s+/g, '-')                             // spaces → dashes
-          .replace(/[^\w-]/g, '');                          // strip non-word chars except dash
+        matchedConstituencyId = constituencyName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
 
         resultDiv.innerHTML = `<p>Your 2026 Senedd constituency is: <span class="const-highlight">${constituencyName}</span></p>`;
         svgContainer.innerHTML = '';
