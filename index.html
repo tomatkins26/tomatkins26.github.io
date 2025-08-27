@@ -207,14 +207,19 @@
           resultDiv.textContent = 'Error loading constituency data.';
         });
 
+      // ===== FIXED loadConstituencyInfo FUNCTION =====
       async function loadConstituencyInfo(constituencyId) {
         const url = `/cons/${constituencyId}.html`;
         try {
           const res = await fetch(url);
           if (!res.ok) return;
           const html = await res.text();
+
+          // Parse the fetched HTML
           const parser = new DOMParser();
           const doc = parser.parseFromString(html, 'text/html');
+
+          // Find the <h2> that contains "Key Stats"
           const headings = doc.querySelectorAll('h2');
           let keyStatsHeading;
           headings.forEach(h => {
@@ -222,11 +227,20 @@
               keyStatsHeading = h;
             }
           });
+
           if (keyStatsHeading) {
-            const firstLi = keyStatsHeading.nextElementSibling?.querySelector('li');
-            if (firstLi) {
-              document.getElementById('constituency-info').innerHTML =
-                `<p><strong>About this constituency:</strong> ${firstLi.textContent}</p>`;
+            // Find the nearest <ul> after the Key Stats heading
+            let ul = keyStatsHeading.nextElementSibling;
+            while (ul && ul.tagName.toLowerCase() !== 'ul') {
+              ul = ul.nextElementSibling;
+            }
+
+            if (ul) {
+              const firstLi = ul.querySelector('li');
+              if (firstLi) {
+                document.getElementById('constituency-info').innerHTML =
+                  `<p><strong>About this constituency:</strong> ${firstLi.textContent}</p>`;
+              }
             }
           }
         } catch (err) {
