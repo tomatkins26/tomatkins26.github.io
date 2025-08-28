@@ -242,7 +242,7 @@
           return;
         }
 
-   const constituencyName = match.properties.enw_cymrae;
+   const constituencyName = match.properties.enw_cymraeg;
 // Normalize name to match keys (removes ŵ and ô, then other characters)
 matchedConstituencyId = constituencyName.trim().replace(/[ŵô]/g, '').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
         console.log('Constituency name:', constituencyName);
