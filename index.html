@@ -81,6 +81,10 @@
       color: #006473;
       font-weight: 700;
     }
+    .const-highlight:hover {
+      color: #000000;
+      text-decoration: none;
+}
     .data-source {
       font-size: 0.8rem;
       color: #666;
@@ -345,7 +349,7 @@
         const flourishUrl = flourishMaps[matchedConstituencyId];
         if (flourishUrl) {
           flourishContainer.innerHTML = `
-            <p>Six MSs will now be elected in each constituency, meaning you'll have six MSs representing you. You can find out more about the changes <a href="https://www.itv.com/news/wales/2025-05-06/senedd-election-2026-the-major-changes-coming-in">here</a>.</p>
+            <p>At the 2026 Seneed elections, six MSs will be elected in each constituency which means you'll have six MSs representing you. You can find out more about the changes <a href="https://www.itv.com/news/wales/2025-05-06/senedd-election-2026-the-major-changes-coming-in" class="const-highlight">here</a>.</p>
             <p><span class='const-highlight'>Browse the candidates in your area.</span></p>
             <iframe 
               src="${flourishUrl}" 
