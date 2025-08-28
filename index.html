@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Find Your 2026 Senedd Constituency V2</title>
   <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
   <style>
@@ -17,14 +18,15 @@
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      align-items: flex-start;
+      align-items: center;
       padding: 1rem;
-      max-width: 700px;
+      max-width: 100%;
     }
     .container {
       width: 100%;
+      max-width: 700px;
       background-color: #fff;
-      padding: 1.5rem;
+      padding: 1rem;
       text-align: left;
     }
     h2 {
@@ -37,13 +39,21 @@
       font-weight: 600;
       margin-bottom: 0.25rem;
     }
+    .postcode-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
     input[type="text"] {
-      width: calc(100% - 40px);
+      flex: 1;
+      min-width: 150px;
       padding: 0.5rem;
       font-size: 1rem;
       border: 1px solid #006473;
       border-radius: 0;
       outline-offset: 2px;
+      box-sizing: border-box;
     }
     input[type="text"]:focus {
       outline: 2px solid #006473;
@@ -79,7 +89,6 @@
     #location-btn {
       display: inline-block;
       cursor: pointer;
-      margin-left: 4px;
       width: 32px;
       height: 32px;
       fill: #006473;
@@ -87,6 +96,7 @@
       stroke-width: 2;
       border-radius: 50%;
       transition: fill 0.2s, stroke 0.2s;
+      flex-shrink: 0;
     }
     #location-btn:hover {
       fill: #004f5c;
@@ -123,11 +133,28 @@
       stroke-width: 3px !important;
       transition: fill 0.3s ease, stroke 0.3s ease;
     }
-    #flourish-container p {
-      margin: 0 0 0.5rem 0;
+    #svg-map svg {
+      width: 100%;
+      height: auto;
     }
     #flourish-container iframe {
-      margin-bottom: 0;
+      width: 100%;
+      max-width: 100%;
+      height: 600px;
+      border: 0;
+    }
+
+    /* Small screen adjustments */
+    @media (max-width: 480px) {
+      h2 {
+        font-size: 1.25rem;
+      }
+      input[type="text"], button[type="submit"] {
+        font-size: 0.95rem;
+      }
+      #flourish-container iframe {
+        height: 400px;
+      }
     }
   </style>
 </head>
@@ -136,7 +163,7 @@
     <h2>Find Your 2026 Senedd Constituency V2</h2>
     <form id="lookup-form">
       <label for="postcode">Enter your postcode:</label>
-      <div style="display:flex; align-items:center;">
+      <div class="postcode-container">
         <input 
           type="text" 
           id="postcode" 
@@ -204,7 +231,7 @@
       };
 
       const constituencySummaries = {
-"afan-ogwr-rhondda": "The new <span class='const-highlight'>Afan Ogwr Rhondda</span> constituency brings together Aberafan Maesteg and Rhondda and Ogmore.",
+        "afan-ogwr-rhondda": "The new <span class='const-highlight'>Afan Ogwr Rhondda</span> constituency brings together Aberafan Maesteg and Rhondda and Ogmore.",
         "bangor-conwy-mn": "The new <span class='const-highlight'>Bangor Conwy Môn</span> constituency was created by combining Bangor Aberconwy and Ynys Môn.",
         "blaenau-gwent-caerffili-rhymni": "The new <span class='const-highlight'>Blaenau Gwent Caerffili Rhymni</span> constituency combines the former Blaenau Gwent and Rhymney constituency with Caerphilly.",
         "brycheiniog-tawe-nedd": "The new <span class='const-highlight'>Brycheiniog Tawe Nedd</span> constituency merges Brecon, Radnor and Cwm Tawe with Neath and Swansea East.",
@@ -242,19 +269,14 @@
           return;
         }
 
-   const constituencyName = match.properties.enw_cymrae;
-// Normalize name to match keys (removes ŵ and ô, then other characters)
-matchedConstituencyId = constituencyName.trim().replace(/[ŵô]/g, '').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-        console.log('Constituency name:', constituencyName);
-        console.log('Normalized ID:', matchedConstituencyId);
+        const constituencyName = match.properties.enw_cymrae;
+        matchedConstituencyId = constituencyName.trim().replace(/[ŵô]/g, '').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
 
-        resultDiv.innerHTML = `<p>Your 2026 Senedd constituency is: <span class="const-highlight">${constituencyName}</span></p>`;
         resultDiv.innerHTML = `<p>Your 2026 Senedd constituency is: <span class='const-highlight'>${constituencyName}</span></p>`;
         svgContainer.innerHTML = '';
         infoDiv.innerHTML = '';
         flourishContainer.innerHTML = '';
 
-        // Load SVG map (same as before)
         try {
           const svgRes = await fetch(`svg/${matchedConstituencyId}.svg`);
           if (!svgRes.ok) throw new Error('SVG not found');
@@ -311,27 +333,26 @@ matchedConstituencyId = constituencyName.trim().replace(/[ŵô]/g, '').toLowerCa
           console.error(svgErr);
         }
 
-       const summary = constituencySummaries[matchedConstituencyId];
-if (summary) {
-  infoDiv.innerHTML = `
-    <hr style="border: none; border-top: 1px solid #ccc; margin: 1rem 0;">
-    <p>${summary}</p>
-  `;
-} else {
-  infoDiv.innerHTML = '';
-}
-  // Embed Flourish table
+        const summary = constituencySummaries[matchedConstituencyId];
+        if (summary) {
+          infoDiv.innerHTML = `
+            <hr style="border: none; border-top: 1px solid #ccc; margin: 1rem 0;">
+            <p>${summary}</p>
+          `;
+        } else {
+          infoDiv.innerHTML = '';
+        }
+
         const flourishUrl = flourishMaps[matchedConstituencyId];
         if (flourishUrl) {
           flourishContainer.innerHTML = `
             <p>Six MSs will now be elected in each constituency, meaning you'll have six MSs representing you.</p>
             <div style="height: 0.7rem;"></div>
-   <p><span class='const-highlight'>Browse the candidates in your area.</span></p>
+            <p><span class='const-highlight'>Browse the candidates in your area.</span></p>
             <iframe 
               src="${flourishUrl}" 
               frameborder="0" 
               scrolling="no" 
-              style="width:100%; height:600px; border:0;"
               allowfullscreen>
             </iframe>
           `;
@@ -371,31 +392,9 @@ if (summary) {
           resultDiv.textContent = 'Geolocation is not supported by your browser.';
           return;
         }
-        resultDiv.textContent = 'Getting your location…';
         navigator.geolocation.getCurrentPosition(
-          async position => {
-            const { longitude, latitude } = position.coords;
-            try {
-              const res = await fetch(`https://api.postcodes.io/postcodes?lon=${longitude}&lat=${latitude}`);
-              const data = await res.json();
-
-              if (data.result?.length) {
-                const postcode = data.result[0].postcode;
-                document.getElementById('postcode').value = postcode;
-              }
-              await lookupByCoords(longitude, latitude);
-            } catch {
-              await lookupByCoords(longitude, latitude);
-            }
-          },
-          error => {
-            const messages = {
-              1: 'Permission to access location denied.',
-              2: 'Position unavailable.',
-              3: 'Location request timed out.'
-            };
-            resultDiv.textContent = messages[error.code] || 'An unknown error occurred.';
-          }
+          pos => lookupByCoords(pos.coords.longitude, pos.coords.latitude),
+          () => resultDiv.textContent = 'Unable to retrieve your location.'
         );
       });
     })();
