@@ -227,28 +227,41 @@
         .then(data => boundaries = data)
         .catch(() => resultDiv.textContent = 'Error loading constituency data.');
 
-      async function lookupByCoords(longitude, latitude) {
-        if (!boundaries) {
-          resultDiv.textContent = 'Constituency data not loaded yet.';
-          return;
-        }
-        resultDiv.textContent = 'Looking up constituency…';
+      function lookupByCoords(lng, lat) {
+  const point = turf.point([lng, lat]);
+  let match = null;
 
-        const userPoint = turf.point([longitude, latitude]);
-        const match = boundaries.features.find(f => turf.booleanPointInPolygon(userPoint, f));
+  for (const feature of seneddBoundaries.features) {
+    if (turf.booleanPointInPolygon(point, feature)) {
+      match = feature;
+      break;
+    }
+  }
 
-        if (!match) {
-          resultDiv.textContent = 'There has been a problem finding your constituency. Try again.';
-          return;
-        }
+  if (!match) {
+    console.warn("No constituency polygon found for coords:", lng, lat);
+    resultDiv.textContent = "We couldn’t find your constituency at this location.";
+    return;
+  }
 
-   const constituencyName = match.properties.enw_cymraeg;
-// Normalize name to match keys (removes ŵ and ô, then other characters)
-matchedConstituencyId = constituencyName.trim().replace(/[ŵô]/g, '').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-        console.log('Constituency name:', constituencyName);
-        console.log('Normalized ID:', matchedConstituencyId);
-        
-        resultDiv.innerHTML = `<p>Your 2026 Senedd constituency is: <span class='const-highlight'>${constituencyName}</span></p>`;
+  const constituencyName = match.properties.enw_cymraeg;
+
+  if (!constituencyName) {
+    console.warn("Match found but 'enw_cymraeg' missing:", match.properties);
+    resultDiv.textContent = "Constituency data missing for this area.";
+    return;
+  }
+
+ matchedConstituencyId = constituencyName
+  .trim()
+  .toLowerCase()
+  .replace(/[ŵô]/g, '')    // remove ŵ and ô entirely
+  .replace(/\s+/g, '-')    // spaces → hyphens
+  .replace(/[^\w-]/g, ''); // remove other punctuation
+
+  console.log("Matched constituency:", matchedConstituencyId);
+  resultDiv.textContent = `You are in ${constituencyName}`;
+}
         svgContainer.innerHTML = '';
         infoDiv.innerHTML = '';
         flourishContainer.innerHTML = '';
