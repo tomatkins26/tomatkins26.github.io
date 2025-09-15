@@ -154,7 +154,6 @@
     border: 0;
   }
 }
-    /* Small screen adjustments */
     @media (max-width: 480px) {
       h2 {
         font-size: 1.25rem;
@@ -172,16 +171,16 @@
   <div class="container" role="region" aria-label="Senedd constituency lookup">
     <h2>Find Your 2026 Senedd Candidates</h2>
     <form id="lookup-form">
-      <label for="postcode">Enter your postcode:</label>
+      <label for="postcode">Enter your postcode or constituency name:</label>
       <div class="postcode-container">
         <input 
           type="text" 
           id="postcode" 
-          placeholder="e.g. CF99 1SN" 
+          placeholder="e.g. CF99 1SN or Pen-y-bont Bro Morgannwg" 
           required 
           aria-required="true" 
           aria-describedby="postcode-desc" 
-          autocomplete="postal-code"
+          autocomplete="off"
         />
         <svg 
           id="location-btn" 
@@ -195,7 +194,7 @@
         </svg>
       </div>
       <div id="postcode-desc" style="font-size:0.8rem; color:#666; margin-top:0.2rem;">
-        Enter a Welsh postcode to find your constituency.
+        Enter a Welsh postcode or constituency name to find your constituency.
       </div>
       <button type="submit">Look up</button>
     </form>
@@ -282,91 +281,38 @@
         const constituencyName = match.properties.enw_cymrae;
         matchedConstituencyId = constituencyName.trim().replace(/[ŵô]/g, '').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
 
-        resultDiv.innerHTML = `<p>Your 2026 Senedd constituency is: <span class='const-highlight'>${constituencyName}</span></p>`;
+        await lookupByConstituencyId(matchedConstituencyId);
+      }
+
+      async function lookupByConstituencyId(constituencyId) {
+        const summary = constituencySummaries[constituencyId];
+        const displayName = summary ? summary.replace(/<[^>]*>/g, '') : constituencyId;
+        resultDiv.innerHTML = `<p>Your 2026 Senedd constituency is: <span class='const-highlight'>${displayName}</span></p>`;
         svgContainer.innerHTML = '';
         infoDiv.innerHTML = '';
         flourishContainer.innerHTML = '';
 
         try {
-          const svgRes = await fetch(`svg/${matchedConstituencyId}.svg`);
+          const svgRes = await fetch(`svg/${constituencyId}.svg`);
           if (!svgRes.ok) throw new Error('SVG not found');
           const svgText = await svgRes.text();
           svgContainer.innerHTML = svgText;
 
           const svgElement = svgContainer.querySelector('svg');
           if (svgElement) {
-            svgElement.querySelectorAll('g[id]').forEach(g => {
-              const groupId = g.getAttribute('id');
-              g.querySelectorAll('path, polygon, rect, circle').forEach(shape => {
-                if (!shape.querySelector('title')) {
-                  const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-                  title.textContent = groupId.replace(/-/g, ' ');
-                  shape.appendChild(title);
-                }
-                shape.addEventListener('mouseenter', e => {
-                  const name = shape.querySelector('title')?.textContent;
-                  if (name) {
-                    tooltip.textContent = name;
-                    tooltip.style.background = groupId === matchedConstituencyId ? '#006473' : '#fff';
-                    tooltip.style.color = groupId === matchedConstituencyId ? '#fff' : '#006473';
-                    tooltip.style.borderColor = groupId === matchedConstituencyId ? '#004f5c' : '#006473';
-                    tooltip.style.display = 'block';
-                  }
-                });
-                shape.addEventListener('mousemove', e => {
-                  tooltip.style.left = `${e.pageX}px`;
-                  tooltip.style.top = `${e.pageY - 16}px`;
-                });
-                shape.addEventListener('mouseleave', () => {
-                  tooltip.style.display = 'none';
-                });
-              });
-            });
-
-            svgElement.querySelectorAll('.highlighted-const').forEach(el => {
-              el.classList.remove('highlighted-const');
-              el.style.fill = '';
-              el.style.stroke = '';
-              el.style.strokeWidth = '';
-            });
-
-            const matchElement = svgElement.querySelector(`#${matchedConstituencyId}`);
+            svgElement.querySelectorAll('.highlighted-const').forEach(el => el.classList.remove('highlighted-const'));
+            const matchElement = svgElement.querySelector(`#${constituencyId}`);
             if (matchElement) matchElement.classList.add('highlighted-const');
-
-            svgElement.querySelectorAll('path').forEach(path => {
-              path.addEventListener('mouseenter', () => path.style.opacity = 0.7);
-              path.addEventListener('mouseleave', () => path.style.opacity = 1);
-            });
           }
-        } catch (svgErr) {
+        } catch {
           svgContainer.innerHTML = '<p style="color:red;">Could not load map for this constituency.</p>';
-          console.error(svgErr);
         }
 
-        const summary = constituencySummaries[matchedConstituencyId];
-        if (summary) {
-          infoDiv.innerHTML = `
-            <hr style="border: none; border-top: 1px solid #ccc; margin: 1rem 0;">
-            <p>${summary}</p>
-          `;
-        } else {
-          infoDiv.innerHTML = '';
-        }
-
-        const flourishUrl = flourishMaps[matchedConstituencyId];
+        if (summary) infoDiv.innerHTML = `<hr style="border: none; border-top: 1px solid #ccc; margin: 1rem 0;"><p>${summary}</p>`;
+        const flourishUrl = flourishMaps[constituencyId];
         if (flourishUrl) {
-          flourishContainer.innerHTML = `
-            <p>At the 2026 Seneed elections, six MSs will be elected in each constituency which means you'll have six MSs representing you. You can find out more about the changes <a href="https://www.itv.com/news/wales/2025-05-06/senedd-election-2026-the-major-changes-coming-in" class="const-highlight1">here</a>.</p>
-            <p><span class='const-highlight'>Browse the candidates in your area:</span></p>
-            <iframe 
-              src="${flourishUrl}" 
-              frameborder="0" 
-              scrolling="no" 
-              allowfullscreen>
-            </iframe>
-          `;
-        } else {
-          flourishContainer.innerHTML = '';
+          flourishContainer.innerHTML = `<p>At the 2026 Senedd elections, six MSs will be elected in each constituency...</p>
+          <iframe src="${flourishUrl}" frameborder="0" scrolling="no" allowfullscreen></iframe>`;
         }
       }
 
@@ -392,24 +338,37 @@
 
       form.addEventListener('submit', async e => {
         e.preventDefault();
-        const postcode = document.getElementById('postcode').value.trim();
-        await lookupByPostcode(postcode);
-      });
-    locationBtn.addEventListener('click', () => {
-  if (!navigator.geolocation) return resultDiv.textContent = 'Geolocation not supported.';
+        const input = document.getElementById('postcode').value.trim();
+        if (!input) return;
 
-  navigator.geolocation.getCurrentPosition(async pos => {
-    try {
-      const res = await fetch(`https://api.postcodes.io/postcodes?lon=${pos.coords.longitude}&lat=${pos.coords.latitude}`);
-      const postcode = res.ok ? (await res.json()).result[0].postcode : null;
-      if (!postcode) return resultDiv.textContent = 'Could not determine postcode.';
-      document.getElementById('postcode').value = postcode;
-      await lookupByPostcode(postcode);
-    } catch {
-      resultDiv.textContent = 'Error retrieving postcode from your location.';
-    }
-  }, () => resultDiv.textContent = 'Unable to retrieve your location.');
-});
+        // Check if input matches a constituency
+        const matchId = Object.keys(constituencySummaries).find(key => {
+          const name = constituencySummaries[key].replace(/<[^>]*>/g, '').toLowerCase();
+          return name.includes(input.toLowerCase());
+        });
+
+        if (matchId) {
+          matchedConstituencyId = matchId;
+          await lookupByConstituencyId(matchId);
+        } else {
+          await lookupByPostcode(input);
+        }
+      });
+
+      locationBtn.addEventListener('click', () => {
+        if (!navigator.geolocation) return resultDiv.textContent = 'Geolocation not supported.';
+        navigator.geolocation.getCurrentPosition(async pos => {
+          try {
+            const res = await fetch(`https://api.postcodes.io/postcodes?lon=${pos.coords.longitude}&lat=${pos.coords.latitude}`);
+            const postcode = res.ok ? (await res.json()).result[0].postcode : null;
+            if (!postcode) return resultDiv.textContent = 'Could not determine postcode.';
+            document.getElementById('postcode').value = postcode;
+            await lookupByPostcode(postcode);
+          } catch {
+            resultDiv.textContent = 'Error retrieving postcode from your location.';
+          }
+        }, () => resultDiv.textContent = 'Unable to retrieve your location.');
+      });
     })();
   </script>
 </body>
