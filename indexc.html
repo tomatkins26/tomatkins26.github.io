@@ -3,7 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <title>Find Your 2026 Senedd Constituency</title>
+
+  <!-- Turf (unchanged) -->
   <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+  <!-- svg-pan-zoom (for pan/zoom + controls) -->
+  <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+
   <style>
     html, body {
       height: 100%;
@@ -123,6 +129,35 @@
       stroke-width: 3px !important;
       transition: fill 0.3s ease, stroke 0.3s ease;
     }
+
+    /* svg-pan-zoom control styling (match brand) */
+    .svg-pan-zoom-control {
+      background: #006473 !important;
+      color: #fff !important;
+      border-radius: 4px !important;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+      font-weight: 600 !important;
+    }
+    .svg-pan-zoom-control svg {
+      fill: #fff !important;
+    }
+
+    /* container for svg so layout is predictable */
+    #svg-map {
+      width: 100%;
+      height: 380px; /* reasonable default; can be changed */
+      margin-top: 1rem;
+      position: relative;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    /* ensure injected SVG scales to container width */
+    #svg-map svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -173,13 +208,257 @@
 
       fetch('senedd2026.json')
         .then(res => res.json())
-        .then(data => {
-          boundaries = data;
-        })
-        .catch(() => {
-          resultDiv.textContent = 'Error loading constituency data.';
+        .then(data => { boundaries = data; })
+        .catch(() => { resultDiv.textContent = 'Error loading constituency data.'; });
+
+      // Helper: try to fetch svg2 first, then fallback to svg.
+      async function fetchMapSvg(id) {
+        const tryPaths = [
+          `svg2/${id}.svg`,
+          `svg/${id}.svg`
+        ];
+        for (const p of tryPaths) {
+          try {
+            const r = await fetch(p);
+            if (!r.ok) continue;
+            const text = await r.text();
+            return { text, path: p };
+          } catch (e) {
+            // try next
+          }
+        }
+        throw new Error('SVG not found in svg2/ or svg/');
+      }
+
+      // Convert width/height to viewBox if needed and remove absolute width/height
+      function ensureViewBox(svgEl) {
+        if (!svgEl.hasAttribute('viewBox')) {
+          const wAttr = svgEl.getAttribute('width');
+          const hAttr = svgEl.getAttribute('height');
+          if (wAttr && hAttr) {
+            // parse numbers (strip units)
+            const w = parseFloat(wAttr);
+            const h = parseFloat(hAttr);
+            if (!isNaN(w) && !isNaN(h) && w > 0 && h > 0) {
+              svgEl.setAttribute('viewBox', `0 0 ${w} ${h}`);
+              svgEl.removeAttribute('width');
+              svgEl.removeAttribute('height');
+            }
+          }
+        }
+      }
+
+      // Main: load svg into container, wire tooltips, highlight, zoom and pan
+      async function loadAndSetupMap(matchedId) {
+        const svgContainer = document.getElementById('svg-map');
+        svgContainer.innerHTML = ''; // clear
+
+        let svgResult;
+        try {
+          svgResult = await fetchMapSvg(matchedId);
+        } catch (err) {
+          svgContainer.innerHTML = '<p style="color:red;">Could not load map for this constituency.</p>';
+          console.error(err);
+          return;
+        }
+
+        svgContainer.innerHTML = svgResult.text;
+
+        const svgElement = svgContainer.querySelector('svg');
+        if (!svgElement) {
+          svgContainer.innerHTML = '<p style="color:red;">SVG missing or invalid.</p>';
+          return;
+        }
+
+        // Make SVG scalable if it used fixed width/height
+        ensureViewBox(svgElement);
+
+        // Set some defaults so computations are consistent
+        // read viewBox values
+        const vb = svgElement.getAttribute('viewBox');
+        const vbParts = (vb || '').split(/\s+|,/).map(Number);
+        if (vbParts.length !== 4 || vbParts.some(isNaN)) {
+          // if viewBox is missing or invalid, try natural width/height fallback
+          const w = parseFloat(svgElement.getAttribute('width')) || svgElement.clientWidth || 1000;
+          const h = parseFloat(svgElement.getAttribute('height')) || svgElement.clientHeight || 800;
+          svgElement.setAttribute('viewBox', `0 0 ${w} ${h}`);
+        }
+
+        // TOOLTIP + HOVER: add titles and events to shapes (keeps original behavior)
+        svgElement.querySelectorAll('g[id]').forEach(g => {
+          const groupId = g.getAttribute('id');
+          g.querySelectorAll('path, polygon, rect, circle').forEach(shape => {
+            if (!shape.querySelector('title')) {
+              const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+              title.textContent = groupId.replace(/-/g, ' ');
+              shape.appendChild(title);
+            }
+
+            shape.addEventListener('mouseenter', e => {
+              const name = shape.querySelector('title')?.textContent;
+              if (name) {
+                tooltip.textContent = name;
+                tooltip.style.background = groupId === matchedId ? '#006473' : '#fff';
+                tooltip.style.color = groupId === matchedId ? '#fff' : '#006473';
+                tooltip.style.borderColor = groupId === matchedId ? '#004f5c' : '#006473';
+                tooltip.style.display = 'block';
+              }
+            });
+
+            shape.addEventListener('mousemove', e => {
+              tooltip.style.left = `${e.pageX}px`;
+              tooltip.style.top = `${e.pageY - 16}px`;
+            });
+
+            shape.addEventListener('mouseleave', () => {
+              tooltip.style.display = 'none';
+            });
+          });
         });
 
+        // Remove old highlight classes (if any)
+        svgElement.querySelectorAll('.highlighted-const').forEach(el => {
+          el.classList.remove('highlighted-const');
+          el.style.fill = '';
+          el.style.stroke = '';
+          el.style.strokeWidth = '';
+        });
+
+        // Apply highlight to matched constituency
+        const matchElement = svgElement.querySelector(`#${matchedId}`);
+        if (matchElement) matchElement.classList.add('highlighted-const');
+
+        // simple hover fade
+        svgElement.querySelectorAll('path').forEach(path => {
+          path.addEventListener('mouseenter', () => path.style.opacity = 0.7);
+          path.addEventListener('mouseleave', () => path.style.opacity = 1);
+        });
+
+        // At this point, ensure the SVG is rendered before calling getBBox
+        // Use requestAnimationFrame to let browser paint the SVG into DOM
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            // parse viewBox now that it must exist
+            const vbStr = svgElement.getAttribute('viewBox');
+            const [vbX, vbY, vbW, vbH] = vbStr.split(/\s+|,/).map(Number);
+
+            // If no match element, we just center on the full svg and initialize pan/zoom
+            let bbox;
+            try {
+              bbox = matchElement ? matchElement.getBBox() : { x: vbX, y: vbY, width: vbW, height: vbH };
+            } catch (e) {
+              // fallback: use full svg
+              bbox = { x: vbX, y: vbY, width: vbW, height: vbH };
+            }
+
+            // Add padding (15% padding around the bbox)
+            const paddingFactor = 0.15;
+            const padW = bbox.width * paddingFactor;
+            const padH = bbox.height * paddingFactor;
+            const padded = {
+              x: bbox.x - padW,
+              y: bbox.y - padH,
+              width: Math.max(1, bbox.width + padW * 2),
+              height: Math.max(1, bbox.height + padH * 2)
+            };
+
+            // Initialize svg-pan-zoom on this SVG
+            let panZoomInstance;
+            try {
+              panZoomInstance = svgPanZoom(svgElement, {
+                zoomEnabled: true,
+                controlIconsEnabled: true, // show + / - controls
+                fit: false,
+                center: false,
+                panEnabled: true,
+                minZoom: 0.2,
+                maxZoom: 20,
+                dblClickZoomEnabled: true,
+                beforeZoom: function () { return true; }
+              });
+            } catch (e) {
+              console.error('svgPanZoom init error', e);
+              panZoomInstance = null;
+            }
+
+            // If panZoom available, compute zoom that makes padded bbox ~70% of viewport
+            if (panZoomInstance) {
+              // read displayed size (container pixels)
+              const dispRect = svgElement.getBoundingClientRect();
+              const dispW = Math.max(1, dispRect.width);
+              const dispH = Math.max(1, dispRect.height);
+
+              // viewBox dims
+              const viewBoxParts = svgElement.getAttribute('viewBox').split(/\s+|,/).map(Number);
+              const [vbx, vby, vbWidth, vbHeight] = viewBoxParts;
+
+              // initial fit scale (the scale the SVG uses to fit inside the container)
+              const initialScale = Math.min(dispW / vbWidth, dispH / vbHeight);
+
+              // displayed bbox size in pixels at initial scale
+              const displayedBBoxWpx = padded.width * initialScale;
+              const displayedBBoxHpx = padded.height * initialScale;
+
+              const targetRatio = 0.70; // want bbox to occupy ~70% of viewport
+              const targetWpx = dispW * targetRatio;
+              const targetHpx = dispH * targetRatio;
+
+              // compute zoom factors required
+              const zoomForWidth = targetWpx / Math.max(1, displayedBBoxWpx);
+              const zoomForHeight = targetHpx / Math.max(1, displayedBBoxHpx);
+
+              // pick the smaller so it fits both width & height
+              let targetZoom = Math.min(zoomForWidth, zoomForHeight);
+
+              // clamp to allowed range
+              const minZoom = panZoomInstance.getMinZoom ? panZoomInstance.getMinZoom() : 0.2;
+              const maxZoom = panZoomInstance.getMaxZoom ? panZoomInstance.getMaxZoom() : 20;
+              targetZoom = Math.max(minZoom, Math.min(maxZoom, targetZoom));
+
+              // animate zoom+pan for a smooth effect
+              const startZoom = panZoomInstance.getZoom();
+              const steps = 20;
+              let step = 0;
+
+              // compute bbox center in viewBox coords
+              const centerVBx = padded.x + padded.width / 2;
+              const centerVBy = padded.y + padded.height / 2;
+
+              function animate() {
+                step++;
+                const t = step / steps;
+                // simple ease-out interpolation
+                const ease = 1 - Math.pow(1 - t, 3);
+                const currentZoom = startZoom + (targetZoom - startZoom) * ease;
+
+                // compute pan so the bbox center is centered in screen
+                // screenX = (centerVBx - vbx) * initialScale * currentZoom
+                const screenX = (centerVBx - vbx) * initialScale * currentZoom;
+                const screenY = (centerVBy - vby) * initialScale * currentZoom;
+
+                const panX = dispW / 2 - screenX;
+                const panY = dispH / 2 - screenY;
+
+                panZoomInstance.zoom(currentZoom);
+                panZoomInstance.pan({ x: panX, y: panY });
+
+                if (step < steps) {
+                  requestAnimationFrame(animate);
+                } else {
+                  // final snap to target values to avoid float fuzz
+                  panZoomInstance.zoom(targetZoom);
+                  panZoomInstance.pan({ x: dispW / 2 - (centerVBx - vbx) * initialScale * targetZoom,
+                                       y: dispH / 2 - (centerVBy - vby) * initialScale * targetZoom });
+                }
+              }
+              animate();
+            } // end if panZoomInstance
+
+          }); // second rAF
+        }); // first rAF
+      } // end loadAndSetupMap
+
+      // Slight wrapper used by lookupByCoords to preserve original function behaviour
       async function lookupByCoords(longitude, latitude) {
         if (!boundaries) {
           resultDiv.textContent = 'Constituency data not loaded yet.';
@@ -200,83 +479,11 @@
 
         resultDiv.innerHTML = `
           <p>Your 2026 Senedd constituency is: <span class="const-highlight">${constituencyName}</span></p>
-          <div id="svg-map" style="width:100%; margin-top:1rem;"></div>
+          <div id="svg-map"></div>
         `;
 
-        const svgContainer = document.getElementById('svg-map');
-
-        try {
-          const svgRes = await fetch(`svg/${matchedConstituencyId}.svg`);
-          if (!svgRes.ok) throw new Error('SVG not found');
-          const svgText = await svgRes.text();
-          svgContainer.innerHTML = svgText;
-
-          const svgElement = svgContainer.querySelector('svg');
-          if (svgElement) {
-            // Tooltip + hover setup
-            svgElement.querySelectorAll('g[id]').forEach(g => {
-              const groupId = g.getAttribute('id');
-              g.querySelectorAll('path, polygon, rect, circle').forEach(shape => {
-                if (!shape.querySelector('title')) {
-                  const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-                  title.textContent = groupId.replace(/-/g, ' ');
-                  shape.appendChild(title);
-                }
-                shape.addEventListener('mouseenter', e => {
-                  const name = shape.querySelector('title')?.textContent;
-                  if (name) {
-                    tooltip.textContent = name;
-                    tooltip.style.background = groupId === matchedConstituencyId ? '#006473' : '#fff';
-                    tooltip.style.color = groupId === matchedConstituencyId ? '#fff' : '#006473';
-                    tooltip.style.borderColor = groupId === matchedConstituencyId ? '#004f5c' : '#006473';
-                    tooltip.style.display = 'block';
-                  }
-                });
-                shape.addEventListener('mousemove', e => {
-                  tooltip.style.left = `${e.pageX}px`;
-                  tooltip.style.top = `${e.pageY - 16}px`;
-                });
-                shape.addEventListener('mouseleave', () => {
-                  tooltip.style.display = 'none';
-                });
-              });
-            });
-
-            // Remove old highlight
-            svgElement.querySelectorAll('.highlighted-const').forEach(el => {
-              el.classList.remove('highlighted-const');
-              el.style.fill = '';
-              el.style.stroke = '';
-              el.style.strokeWidth = '';
-            });
-
-            // Highlight matched constituency
-            const matchElement = svgElement.querySelector(`#${matchedConstituencyId}`);
-            if (matchElement) {
-              matchElement.classList.add('highlighted-const');
-
-              // === NEW: Auto-zoom/pan ===
-              const bbox = matchElement.getBBox();
-              const padding = 20;
-              const viewBox = [
-                bbox.x - padding,
-                bbox.y - padding,
-                bbox.width + padding * 2,
-                bbox.height + padding * 2
-              ].join(' ');
-              svgElement.setAttribute('viewBox', viewBox);
-            }
-
-            // Hover fade effect
-            svgElement.querySelectorAll('path').forEach(path => {
-              path.addEventListener('mouseenter', () => path.style.opacity = 0.7);
-              path.addEventListener('mouseleave', () => path.style.opacity = 1);
-            });
-          }
-        } catch (svgErr) {
-          svgContainer.innerHTML = '<p style="color:red;">Could not load map for this constituency.</p>';
-          console.error(svgErr);
-        }
+        // Only change: load svg2 first and auto-zoom / pan while keeping existing tooltip/highlight behaviour.
+        await loadAndSetupMap(matchedConstituencyId);
       }
 
       async function lookupByPostcode(postcode) {
