@@ -4,160 +4,29 @@
   <meta charset="UTF-8" />
   <title>Find Your 2026 Senedd Constituency</title>
 
-  <!-- Turf (unchanged) -->
   <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
-
-  <!-- svg-pan-zoom (for pan/zoom + controls) -->
   <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
 
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #fff;
-      color: #28394e;
-      box-sizing: border-box;
-    }
-    body {
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: flex-start;
-      padding: 1rem;
-      max-width: 700px;
-    }
-    .container {
-      width: 100%;
-      background-color: #fff;
-      padding: 1.5rem;
-      text-align: left;
-    }
-    h2 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-    }
-    label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-    }
-    input[type="text"] {
-      width: calc(100% - 40px);
-      padding: 0.5rem;
-      font-size: 1rem;
-      border: 1px solid #006473;
-      border-radius: 0;
-      outline-offset: 2px;
-    }
-    input[type="text"]:focus {
-      outline: 2px solid #006473;
-    }
-    button[type="submit"] {
-      margin-top: 1rem;
-      width: 100%;
-      padding: 0.6rem 1rem;
-      font-size: 1rem;
-      font-weight: 700;
-      color: white;
-      background-color: #006473;
-      border: none;
-      border-radius: 0;
-      cursor: pointer;
-    }
-    button[type="submit"]:hover {
-      background-color: #004f5c;
-    }
-    #result {
-      margin-top: 1.5rem;
-      font-weight: 600;
-    }
-    .const-highlight {
-      color: #006473;
-      font-weight: 700;
-    }
-    .data-source {
-      font-size: 0.8rem;
-      color: #666;
-      margin-top: 0.75rem;
-    }
-    #location-btn {
-      display: inline-block;
-      cursor: pointer;
-      margin-left: 4px;
-      width: 32px;
-      height: 32px;
-      fill: #006473;
-      stroke: #006473;
-      stroke-width: 2;
-      border-radius: 50%;
-      transition: fill 0.2s, stroke 0.2s;
-    }
-    #location-btn:hover {
-      fill: #004f5c;
-      stroke: #004f5c;
-    }
-    #map-tooltip {
-      position: absolute;
-      display: none;
-      pointer-events: none;
-      background: #fff;
-      color: #fff;
-      padding: 8px 12px;
-      font-size: 1rem;
-      font-weight: 600;
-      white-space: nowrap;
-      transform: translate(-50%, -100%);
-      border: 0 solid #006473;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      z-index: 1000;
-    }
-    #map-tooltip::after {
-      content: "";
-      position: absolute;
-      left: 50%;
-      bottom: -6px;
-      transform: translateX(-50%);
-      border-width: 6px 6px 0 6px;
-      border-style: solid;
-      border-color: #fff transparent transparent transparent;
-    }
-    .highlighted-const {
-      fill: #006473 !important;
-      stroke: #004f5c !important;
-      stroke-width: 3px !important;
-      transition: fill 0.3s ease, stroke 0.3s ease;
-    }
-
-    /* svg-pan-zoom control styling (match brand) */
-    .svg-pan-zoom-control {
-      background: #006473 !important;
-      color: #fff !important;
-      border-radius: 4px !important;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
-      font-weight: 600 !important;
-    }
-    .svg-pan-zoom-control svg {
-      fill: #fff !important;
-    }
-
-    /* container for svg so layout is predictable */
-    #svg-map {
-      width: 100%;
-      height: 380px; /* reasonable default; can be changed */
-      margin-top: 1rem;
-      position: relative;
-      overflow: hidden;
-      background: #fff;
-    }
-
-    /* ensure injected SVG scales to container width */
-    #svg-map svg {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
+    html, body { height: 100%; margin: 0; font-family: Arial, sans-serif; background-color: #fff; color: #28394e; box-sizing: border-box; }
+    body { display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; padding: 1rem; max-width: 700px; }
+    .container { width: 100%; background-color: #fff; padding: 1.5rem; text-align: left; }
+    h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; }
+    label { display: block; font-weight: 600; margin-bottom: 0.25rem; }
+    input[type="text"] { width: calc(100% - 40px); padding: 0.5rem; font-size: 1rem; border: 1px solid #006473; border-radius: 0; outline-offset: 2px; }
+    input[type="text"]:focus { outline: 2px solid #006473; }
+    button[type="submit"] { margin-top: 1rem; width: 100%; padding: 0.6rem 1rem; font-size: 1rem; font-weight: 700; color: white; background-color: #006473; border: none; border-radius: 0; cursor: pointer; }
+    button[type="submit"]:hover { background-color: #004f5c; }
+    #result { margin-top: 1.5rem; font-weight: 600; }
+    .const-highlight { color: #006473; font-weight: 700; }
+    .data-source { font-size: 0.8rem; color: #666; margin-top: 0.75rem; }
+    #location-btn { display: inline-block; cursor: pointer; margin-left: 4px; width: 32px; height: 32px; fill: #006473; stroke: #006473; stroke-width: 2; border-radius: 50%; transition: fill 0.2s, stroke 0.2s; }
+    #location-btn:hover { fill: #004f5c; stroke: #004f5c; }
+    #map-tooltip { position: absolute; display: none; pointer-events: none; background: #fff; color: #fff; padding: 8px 12px; font-size: 1rem; font-weight: 600; white-space: nowrap; transform: translate(-50%, -100%); border: 0 solid #006473; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 1000; }
+    #map-tooltip::after { content: ""; position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%); border-width: 6px 6px 0 6px; border-style: solid; border-color: #fff transparent transparent transparent; }
+    .highlighted-const { fill: #006473 !important; stroke: #004f5c !important; stroke-width: 3px !important; transition: fill 0.3s ease, stroke 0.3s ease; }
+    #svg-map { width: 100%; height: 380px; margin-top: 1rem; position: relative; overflow: hidden; background: #fff; }
+    #svg-map svg { width: 100%; height: 100%; display: block; }
   </style>
 </head>
 <body>
@@ -166,22 +35,8 @@
     <form id="lookup-form">
       <label for="postcode">Enter your postcode:</label>
       <div style="display:flex; align-items:center;">
-        <input 
-          type="text" 
-          id="postcode" 
-          placeholder="e.g. CF99 1SN" 
-          required 
-          aria-required="true" 
-          aria-describedby="postcode-desc" 
-          autocomplete="postal-code"
-          />
-        <svg 
-          id="location-btn" 
-          role="button" 
-          tabindex="0" 
-          aria-label="Find my current location" 
-          viewBox="0 0 24 24"
-        >
+        <input type="text" id="postcode" placeholder="e.g. CF99 1SN" required aria-required="true" aria-describedby="postcode-desc" autocomplete="postal-code"/>
+        <svg id="location-btn" role="button" tabindex="0" aria-label="Find my current location" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="8" fill="none" />
           <circle cx="12" cy="12" r="4" />
         </svg>
@@ -199,195 +54,174 @@
   <div id="svg-map"></div>
 
   <script>
-    (function () {
-      const form = document.getElementById('lookup-form');
-      const resultDiv = document.getElementById('result');
-      const locationBtn = document.getElementById('location-btn');
-      const tooltip = document.getElementById('map-tooltip');
-      let boundaries = null;
-      let matchedConstituencyId = null;
+  (function () {
+    const form = document.getElementById('lookup-form');
+    const resultDiv = document.getElementById('result');
+    const locationBtn = document.getElementById('location-btn');
+    const tooltip = document.getElementById('map-tooltip');
+    let boundaries = null;
+    let matchedConstituencyId = null;
 
-      fetch('senedd2026.json')
-        .then(res => res.json())
-        .then(data => { boundaries = data; })
-        .catch(() => { resultDiv.textContent = 'Error loading constituency data.'; });
+    fetch('senedd2026.json').then(res => res.json()).then(data => { boundaries = data; }).catch(() => { resultDiv.textContent = 'Error loading constituency data.'; });
 
-      async function fetchMapSvg(id) {
-        const tryPaths = [`svg2/${id}.svg`, `svg/${id}.svg`];
-        for (const p of tryPaths) {
-          try {
-            const r = await fetch(p);
-            if (!r.ok) continue;
-            const text = await r.text();
-            return { text, path: p };
-          } catch (e) {}
-        }
-        throw new Error('SVG not found in svg2/ or svg/');
+    async function fetchMapSvg(id) {
+      const tryPaths = [`svg2/${id}.svg`, `svg/${id}.svg`];
+      for (const p of tryPaths) {
+        try { const r = await fetch(p); if (!r.ok) continue; const text = await r.text(); return { text, path: p }; } catch(e) {}
       }
+      throw new Error('SVG not found');
+    }
 
-      function ensureViewBox(svgEl) {
-        if (!svgEl.hasAttribute('viewBox')) {
-          const w = parseFloat(svgEl.getAttribute('width'));
-          const h = parseFloat(svgEl.getAttribute('height'));
-          if (w && h) {
-            svgEl.setAttribute('viewBox', `0 0 ${w} ${h}`);
-            svgEl.removeAttribute('width');
-            svgEl.removeAttribute('height');
+    function ensureViewBox(svgEl) {
+      if (!svgEl.hasAttribute('viewBox')) {
+        const w = parseFloat(svgEl.getAttribute('width'));
+        const h = parseFloat(svgEl.getAttribute('height'));
+        if (w && h) { svgEl.setAttribute('viewBox', `0 0 ${w} ${h}`); svgEl.removeAttribute('width'); svgEl.removeAttribute('height'); }
+      }
+    }
+
+    async function loadAndSetupMap(matchedId) {
+      const svgContainer = document.getElementById('svg-map');
+      svgContainer.innerHTML = '';
+      let svgResult;
+      try { svgResult = await fetchMapSvg(matchedId); } catch { svgContainer.innerHTML = '<p style="color:red;">Could not load map for this constituency.</p>'; return; }
+      svgContainer.innerHTML = svgResult.text;
+      const svgElement = svgContainer.querySelector('svg');
+      if (!svgElement) { svgContainer.innerHTML = '<p style="color:red;">SVG missing or invalid.</p>'; return; }
+
+      ensureViewBox(svgElement);
+
+      svgElement.querySelectorAll('g[id]').forEach(g => {
+        const groupId = g.getAttribute('id');
+        g.querySelectorAll('path, polygon, rect, circle').forEach(shape => {
+          if (!shape.querySelector('title')) {
+            const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+            title.textContent = groupId.replace(/-/g,' ');
+            shape.appendChild(title);
           }
-        }
-      }
-
-      async function loadAndSetupMap(matchedId) {
-        const svgContainer = document.getElementById('svg-map');
-        svgContainer.innerHTML = '';
-        let svgResult;
-        try { svgResult = await fetchMapSvg(matchedId); } catch {
-          svgContainer.innerHTML = '<p style="color:red;">Could not load map for this constituency.</p>'; return;
-        }
-        svgContainer.innerHTML = svgResult.text;
-        const svgElement = svgContainer.querySelector('svg');
-        if (!svgElement) { svgContainer.innerHTML = '<p style="color:red;">SVG missing or invalid.</p>'; return; }
-
-        ensureViewBox(svgElement);
-
-        const vbParts = svgElement.getAttribute('viewBox').split(/\s+|,/).map(Number);
-        if (vbParts.length !== 4 || vbParts.some(isNaN)) {
-          const w = parseFloat(svgElement.getAttribute('width')) || svgElement.clientWidth || 1000;
-          const h = parseFloat(svgElement.getAttribute('height')) || svgElement.clientHeight || 800;
-          svgElement.setAttribute('viewBox', `0 0 ${w} ${h}`);
-        }
-
-        svgElement.querySelectorAll('g[id]').forEach(g => {
-          const groupId = g.getAttribute('id');
-          g.querySelectorAll('path, polygon, rect, circle').forEach(shape => {
-            if (!shape.querySelector('title')) {
-              const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-              title.textContent = groupId.replace(/-/g,' '); shape.appendChild(title);
+          shape.addEventListener('mouseenter', e => {
+            const name = shape.querySelector('title')?.textContent;
+            if(name){
+              tooltip.textContent = name;
+              tooltip.style.background = groupId === matchedId ? '#006473' : '#fff';
+              tooltip.style.color = groupId === matchedId ? '#fff' : '#006473';
+              tooltip.style.borderColor = groupId === matchedId ? '#004f5c' : '#006473';
+              tooltip.style.display = 'block';
             }
-            shape.addEventListener('mouseenter', e => {
-              const name = shape.querySelector('title')?.textContent;
-              if(name) {
-                tooltip.textContent = name;
-                tooltip.style.background = groupId === matchedId ? '#006473' : '#fff';
-                tooltip.style.color = groupId === matchedId ? '#fff' : '#006473';
-                tooltip.style.borderColor = groupId === matchedId ? '#004f5c' : '#006473';
-                tooltip.style.display = 'block';
-              }
-            });
-            shape.addEventListener('mousemove', e => {
-              tooltip.style.left = `${e.pageX}px`;
-              tooltip.style.top = `${e.pageY-16}px`;
-            });
-            shape.addEventListener('mouseleave', () => { tooltip.style.display='none'; });
           });
-        });
-
-        svgElement.querySelectorAll('.highlighted-const').forEach(el => el.classList.remove('highlighted-const'));
-        const matchElement = svgElement.querySelector(`#${matchedId}`);
-        if(matchElement) matchElement.classList.add('highlighted-const');
-
-        svgElement.querySelectorAll('path').forEach(path => {
-          path.addEventListener('mouseenter', () => path.style.opacity=0.7);
-          path.addEventListener('mouseleave', () => path.style.opacity=1);
-        });
-
-        requestAnimationFrame(() => { requestAnimationFrame(() => {
-          const vbStr = svgElement.getAttribute('viewBox');
-          const [vbx, vby, vbW, vbH] = vbStr.split(/\s+|,/).map(Number);
-          let bbox;
-          try { bbox = matchElement ? matchElement.getBBox() : { x:vbx,y:vby,width:vbW,height:vbH }; } catch { bbox={ x:vbx,y:vby,width:vbW,height:vbH }; }
-
-          const paddingFactor = 0.15;
-          const padW = bbox.width*paddingFactor;
-          const padH = bbox.height*paddingFactor;
-          const padded = { x:bbox.x-padW, y:bbox.y-padH, width: Math.max(1,bbox.width+padW*2), height: Math.max(1,bbox.height+padH*2) };
-
-          let panZoomInstance;
-          try {
-            panZoomInstance = svgPanZoom(svgElement,{ zoomEnabled:true, controlIconsEnabled:true, fit:false, center:false, panEnabled:true, minZoom:0.2, maxZoom:20, dblClickZoomEnabled:true, beforeZoom:()=>true });
-          } catch(e){ panZoomInstance=null; console.error(e); }
-
-          if(panZoomInstance) {
-            const dispRect = svgElement.getBoundingClientRect();
-            const dispW = Math.max(1, dispRect.width);
-            const dispH = Math.max(1, dispRect.height);
-            const initialScale = Math.min(dispW/vbW, dispH/vbH);
-            const displayedBBoxWpx = padded.width*initialScale;
-            const displayedBBoxHpx = padded.height*initialScale;
-            const targetRatio = 0.7;
-            const zoomForWidth = dispW*targetRatio/Math.max(1,displayedBBoxWpx);
-            const zoomForHeight = dispH*targetRatio/Math.max(1,displayedBBoxHpx);
-            let targetZoom = Math.min(zoomForWidth, zoomForHeight);
-            const minZoom = panZoomInstance.getMinZoom?panZoomInstance.getMinZoom():0.2;
-            const maxZoom = panZoomInstance.getMaxZoom?panZoomInstance.getMaxZoom():20;
-            targetZoom = Math.max(minZoom, Math.min(maxZoom, targetZoom));
-
-            const startZoom = panZoomInstance.getZoom();
-            const steps = 20; let step=0;
-            const centerVBx = padded.x+padded.width/2;
-            const centerVBy = padded.y+padded.height/2;
-
-            function animate() {
-              step++;
-              const t = step/steps;
-              const ease = 1-Math.pow(1-t,3);
-              const currentZoom = startZoom + (targetZoom - startZoom)*ease;
-              const screenX = (centerVBx-vbx)*initialScale*currentZoom;
-              const screenY = (centerVBy-vby)*initialScale*currentZoom;
-              const panX = dispW/2 - screenX;
-              const panY = dispH/2 - screenY;
-              panZoomInstance.zoom(currentZoom);
-              panZoomInstance.pan({x:panX,y:panY});
-              if(step<steps) requestAnimationFrame(animate);
-              else panZoomInstance.pan({x:dispW/2-(centerVBx-vbx)*initialScale*targetZoom,y:dispH/2-(centerVBy-vby)*initialScale*targetZoom});
-            }
-            animate();
-          }
-        }); });
-      }
-
-      async function lookupByCoords(longitude, latitude) {
-        if(!boundaries){ resultDiv.textContent='Constituency data not loaded yet.'; return; }
-        resultDiv.textContent='Looking up constituency…';
-        const userPoint = turf.point([longitude,latitude]);
-        const match = boundaries.features.find(feature=>turf.booleanPointInPolygon(userPoint,feature));
-        if(!match){ resultDiv.textContent='Could not find your constituency.'; return; }
-        const constituencyName = match.properties.enw_cymrae;
-        matchedConstituencyId = constituencyName.toLowerCase().replace(/\s+/g,'-').replace(/[^\w-]/g,'');
-        resultDiv.innerHTML=`<p>Your 2026 Senedd constituency is: <span class="const-highlight">${constituencyName}</span></p>`;
-        await loadAndSetupMap(matchedConstituencyId);
-      }
-
-      async function lookupByPostcode(postcode){
-        resultDiv.textContent='Looking up constituency…';
-        try {
-          const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
-          const data = await res.json();
-          if(!data.result) throw new Error('Invalid postcode');
-          if(data.result.country!=='Wales'){ resultDiv.textContent='Sorry, this tool only supports Welsh postcodes.'; return; }
-          await lookupByCoords(data.result.longitude, data.result.latitude);
-        } catch(err){ resultDiv.textContent='Something went wrong. Please check your postcode and try again.'; console.error(err); }
-      }
-
-      form.addEventListener('submit', async e=>{ e.preventDefault(); await lookupByPostcode(document.getElementById('postcode').value.trim()); });
-
-      locationBtn.addEventListener('click', () => {
-        if(!navigator.geolocation){ resultDiv.textContent='Geolocation not supported'; return; }
-        resultDiv.textContent='Getting your location…';
-        navigator.geolocation.getCurrentPosition(async pos=>{
-          try{
-            const res = await fetch(`https://api.postcodes.io/postcodes?lon=${pos.coords.longitude}&lat=${pos.coords.latitude}`);
-            const data = await res.json();
-            if(data.result?.length) document.getElementById('postcode').value = data.result[0].postcode;
-            await lookupByCoords(pos.coords.longitude,pos.coords.latitude);
-          }catch{ await lookupByCoords(pos.coords.longitude,pos.coords.latitude); }
-        }, error => {
-          const msgs={1:'Permission denied',2:'Position unavailable',3:'Location request timed out'};
-          resultDiv.textContent = msgs[error.code] || 'Unknown error';
+          shape.addEventListener('mousemove', e => { tooltip.style.left = `${e.pageX}px`; tooltip.style.top = `${e.pageY-16}px`; });
+          shape.addEventListener('mouseleave', () => { tooltip.style.display='none'; });
         });
       });
 
-    })();
+      svgElement.querySelectorAll('.highlighted-const').forEach(el => el.classList.remove('highlighted-const'));
+      const matchElement = svgElement.querySelector(`#${matchedId}`);
+      if(matchElement) matchElement.classList.add('highlighted-const');
+
+      svgElement.querySelectorAll('path').forEach(path => {
+        path.addEventListener('mouseenter', () => path.style.opacity=0.7);
+        path.addEventListener('mouseleave', () => path.style.opacity=1);
+      });
+
+      requestAnimationFrame(() => { requestAnimationFrame(() => {
+        const vbStr = svgElement.getAttribute('viewBox');
+        const [vbx, vby, vbW, vbH] = vbStr.split(/\s+|,/).map(Number);
+
+        // Use inner path/polygon/shape element for zoom bbox
+        let shapeForZoom = svgElement.querySelector(`#${matchedId}`);
+        if(shapeForZoom && shapeForZoom.querySelector('path, polygon, rect, circle')) shapeForZoom = shapeForZoom.querySelector('path, polygon, rect, circle');
+        let bbox;
+        try { bbox = shapeForZoom ? shapeForZoom.getBBox() : { x:vbx,y:vby,width:vbW,height:vbH }; } catch { bbox={ x:vbx,y:vby,width:vbW,height:vbH }; }
+
+        const paddingFactor = 0.15;
+        const padW = bbox.width*paddingFactor;
+        const padH = bbox.height*paddingFactor;
+        const padded = { x:bbox.x-padW, y:bbox.y-padH, width: Math.max(1,bbox.width+padW*2), height: Math.max(1,bbox.height+padH*2) };
+
+        let panZoomInstance;
+        try { panZoomInstance = svgPanZoom(svgElement,{ zoomEnabled:true, controlIconsEnabled:true, fit:false, center:false, panEnabled:true, minZoom:0.2, maxZoom:20, dblClickZoomEnabled:true }); } catch(e){ panZoomInstance=null; console.error(e); }
+
+        if(panZoomInstance){
+          const dispRect = svgElement.getBoundingClientRect();
+          const dispW = Math.max(1, dispRect.width);
+          const dispH = Math.max(1, dispRect.height);
+          const initialScale = Math.min(dispW/vbW, dispH/vbH);
+          const displayedBBoxWpx = padded.width*initialScale;
+          const displayedBBoxHpx = padded.height*initialScale;
+          const targetRatio = 0.7;
+          const zoomForWidth = dispW*targetRatio/Math.max(1,displayedBBoxWpx);
+          const zoomForHeight = dispH*targetRatio/Math.max(1,displayedBBoxHpx);
+          let targetZoom = Math.min(zoomForWidth, zoomForHeight);
+          const minZoom = panZoomInstance.getMinZoom?panZoomInstance.getMinZoom():0.2;
+          const maxZoom = panZoomInstance.getMaxZoom?panZoomInstance.getMaxZoom():20;
+          targetZoom = Math.max(minZoom, Math.min(maxZoom, targetZoom));
+
+          const startZoom = panZoomInstance.getZoom();
+          const steps = 20; let step=0;
+          const centerVBx = padded.x+padded.width/2;
+          const centerVBy = padded.y+padded.height/2;
+
+          function animate() {
+            step++;
+            const t = step/steps;
+            const ease = 1-Math.pow(1-t,3);
+            const currentZoom = startZoom + (targetZoom - startZoom)*ease;
+            const screenX = (centerVBx-vbx)*initialScale*currentZoom;
+            const screenY = (centerVBy-vby)*initialScale*currentZoom;
+            const panX = dispW/2 - screenX;
+            const panY = dispH/2 - screenY;
+            panZoomInstance.zoom(currentZoom);
+            panZoomInstance.pan({x:panX,y:panY});
+            if(step<steps) requestAnimationFrame(animate);
+            else panZoomInstance.pan({x:dispW/2-(centerVBx-vbx)*initialScale*targetZoom,y:dispH/2-(centerVBy-vby)*initialScale*targetZoom});
+          }
+          animate();
+        }
+      }); });
+    }
+
+    async function lookupByCoords(longitude, latitude) {
+      if(!boundaries){ resultDiv.textContent='Constituency data not loaded yet.'; return; }
+      resultDiv.textContent='Looking up constituency…';
+      const userPoint = turf.point([longitude,latitude]);
+      const match = boundaries.features.find(feature=>turf.booleanPointInPolygon(userPoint,feature));
+      if(!match){ resultDiv.textContent='Could not find your constituency.'; return; }
+      const constituencyName = match.properties.enw_cymrae;
+      matchedConstituencyId = constituencyName.toLowerCase().replace(/\s+/g,'-').replace(/[^\w-]/g,'');
+      resultDiv.innerHTML=`<p>Your 2026 Senedd constituency is: <span class="const-highlight">${constituencyName}</span></p>`;
+      await loadAndSetupMap(matchedConstituencyId);
+    }
+
+    async function lookupByPostcode(postcode){
+      resultDiv.textContent='Looking up constituency…';
+      try {
+        const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
+        const data = await res.json();
+        if(!data.result) throw new Error('Invalid postcode');
+        if(data.result.country!=='Wales'){ resultDiv.textContent='Sorry, this tool only supports Welsh postcodes.'; return; }
+        await lookupByCoords(data.result.longitude, data.result.latitude);
+      } catch(err){ resultDiv.textContent='Something went wrong. Please check your postcode and try again.'; console.error(err); }
+    }
+
+    form.addEventListener('submit', async e=>{ e.preventDefault(); await lookupByPostcode(document.getElementById('postcode').value.trim()); });
+
+    locationBtn.addEventListener('click', () => {
+      if(!navigator.geolocation){ resultDiv.textContent='Geolocation not supported'; return; }
+      resultDiv.textContent='Getting your location…';
+      navigator.geolocation.getCurrentPosition(async pos=>{
+        try{
+          const res = await fetch(`https://api.postcodes.io/postcodes?lon=${pos.coords.longitude}&lat=${pos.coords.latitude}`);
+          const data = await res.json();
+          if(data.result?.length) document.getElementById('postcode').value = data.result[0].postcode;
+          await lookupByCoords(pos.coords.longitude,pos.coords.latitude);
+        }catch{ await lookupByCoords(pos.coords.longitude,pos.coords.latitude); }
+      }, error => {
+        const msgs={1:'Permission denied',2:'Position unavailable',3:'Location request timed out'};
+        resultDiv.textContent = msgs[error.code] || 'Unknown error';
+      });
+    });
+
+  })();
   </script>
 </body>
 </html>
