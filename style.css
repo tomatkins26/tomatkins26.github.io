@@ -34,7 +34,7 @@ img.logo {
 }
 
 h2 {
-  color: #006473;
+  color: #ff6633;
   margin-bottom: 1.5rem;
 }
 
@@ -59,8 +59,8 @@ label {
 }
 
 .postcode-wrapper input[type="text"]:focus {
-  border-color: #006473;
-  box-shadow: 0 0 3px #006473;
+  border-color: #ff6633;
+  box-shadow: 0 0 3px #ff6633;
 }
 
 .postcode-wrapper button.icon-button {
@@ -82,12 +82,12 @@ label {
 }
 
 .postcode-wrapper button.icon-button:hover {
-  color: #006473;
+  color: #ff6633;
   transform: translateY(-50%) scale(1.1);
 }
 
 button[type="submit"] {
-  background-color: #006473;
+  background-color: #ff6633;
   color: #fff;
   padding: 0.75rem 1rem;
   font-size: 1rem;
@@ -109,7 +109,7 @@ button[type="submit"]:hover {
 }
 
 .const-name {
-  color: #006473;
+  color: #ff6633;
   text-decoration: none;
 }
 
@@ -128,7 +128,7 @@ button[type="submit"]:hover {
 
 .progress-bar {
   height: 100%;
-  background-color: #006473;
+  background-color: #ff6633;
   width: 0%;
   transition: width 2.5s linear;
 }
@@ -160,7 +160,7 @@ footer {
 #toggle-info-btn {
   background: none;
   border: none;
-  color: #006473;
+  color: #ff6633;
   cursor: pointer;
   font-size: 0.7rem;
   margin-top: 0.25rem;
