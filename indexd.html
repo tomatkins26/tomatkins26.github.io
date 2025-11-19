@@ -220,45 +220,7 @@
       const tooltip = document.getElementById('map-tooltip');
       let boundaries = null;
       let matchedConstituencyId = null;
-
-      const flourishMaps = {
-        "afan-ogwr-rhondda": "https://public.flourish.studio/visualisation/24823817/embed",
-        "bangor-conwy-mn": "https://public.flourish.studio/visualisation/24824719/embed",
-        "blaenau-gwent-caerffili-rhymni": "https://public.flourish.studio/visualisation/24824725/embed",
-        "brycheiniog-tawe-nedd": "https://public.flourish.studio/visualisation/24824729/embed",
-        "caerdydd-ffynnon-taf": "https://public.flourish.studio/visualisation/24824733/embed",
-        "caerdydd-penarth": "https://public.flourish.studio/visualisation/24824736/embed",
-        "casnewydd-islwyn": "https://public.flourish.studio/visualisation/24824747/embed",
-        "ceredigion-penfro": "https://public.flourish.studio/visualisation/24824754/embed",
-        "clwyd": "https://public.flourish.studio/visualisation/24824760/embed",
-        "fflint-wrecsam": "https://public.flourish.studio/visualisation/24824762/embed",
-        "gwynedd-maldwyn": "https://public.flourish.studio/visualisation/24824769/embed",
-        "gyr-abertawe": "https://public.flourish.studio/visualisation/24824774/embed",
-        "pen-y-bont-bro-morgannwg": "https://public.flourish.studio/visualisation/24824775/embed",
-        "pontypridd-cynon-merthyr": "https://public.flourish.studio/visualisation/24824778/embed",
-        "sir-fynwy-torfaen": "https://public.flourish.studio/visualisation/24824782/embed",
-        "sir-gaerfyrddin": "https://public.flourish.studio/visualisation/24824787/embed"
-      };
-
-      const constituencySummaries = {
-        "afan-ogwr-rhondda": "The new <span class='const-highlight'>Afan Ogwr Rhondda</span> constituency brings together Aberafan Maesteg and Rhondda and Ogmore.",
-        "bangor-conwy-mn": "The new <span class='const-highlight'>Bangor Conwy Môn</span> constituency was created by combining Bangor Aberconwy and Ynys Môn.",
-        "blaenau-gwent-caerffili-rhymni": "The new <span class='const-highlight'>Blaenau Gwent Caerffili Rhymni</span> constituency combines the former Blaenau Gwent and Rhymney constituency with Caerphilly.",
-        "brycheiniog-tawe-nedd": "The new <span class='const-highlight'>Brycheiniog Tawe Nedd</span> constituency merges Brecon, Radnor and Cwm Tawe with Neath and Swansea East.",
-        "caerdydd-ffynnon-taf": "The new <span class='const-highlight'>Caerdydd Ffynnon Taf</span> constituency brings together the Cardiff North and Cardiff East constituencies.",
-        "caerdydd-penarth": "The new <span class='const-highlight'>Caerdydd Penarth</span> constituency combines Cardiff West with Cardiff South and Penarth.",
-        "casnewydd-islwyn": "The new <span class='const-highlight'>Casnewydd Islwyn</span> constituency is formed from Newport East and Newport West and Islwyn.",
-        "ceredigion-penfro": "<span class='const-highlight'>Ceredigion Penfro</span> combines the constituencies of Ceredigion Preseli and Mid and South Pembrokeshire.",
-        "clwyd": "The new <span class='const-highlight'>Clwyd</span> constituency merges Clwyd East and Clwyd North.",
-        "fflint-wrecsam": "<span class='const-highlight'>Fflint Wrecsam</span> consists of the former Alyn and Deeside and Wrexham constituencies.",
-        "gwynedd-maldwyn": "The new <span class='const-highlight'>Gwynedd Maldwyn</span> constituency is formed by merging Dwyfor Meirionnydd with Montgomeryshire and Glyndŵr.",
-        "gyr-abertawe": "The new <span class='const-highlight'>Gŵyr Abertawe</span> constituency is formed from Swansea West and Gower.",
-        "pen-y-bont-bro-morgannwg": "The new <span class='const-highlight'>Pen-y-bont Bro Morgannwg</span> constituency is formed from the Westminster constituencies of Bridgend and Vale of Glamorgan.",
-        "pontypridd-cynon-merthyr": "The new <span class='const-highlight'>Pontypridd Cynon Merthyr</span> constituency is formed by uniting the Westminster constituencies of Pontypridd and Merthyr Tydfil and Aberdare.",
-        "sir-fynwy-torfaen": "The new <span class='const-highlight'>Sir Fynwy Torfaen</span> constituency is created by merging Monmouthshire and Torfaen.",
-        "sir-gaerfyrddin": "The new <span class='const-highlight'>Sir Gaerfyrddin</span> constituency brings together the Westminster constituencies of Caerfyrddin (Carmarthen) and Llanelli."
-      };
-
+      
       fetch('senedd2026.json')
         .then(res => res.json())
         .then(data => boundaries = data)
@@ -352,24 +314,6 @@
         } else {
           infoDiv.innerHTML = '';
         }
-
-        const flourishUrl = flourishMaps[matchedConstituencyId];
-        if (flourishUrl) {
-          flourishContainer.innerHTML = `
-            <p>At the 2026 Seneed elections, six MSs will be elected in each constituency which means you'll have six MSs representing you. You can find out more about the changes <a href="https://www.itv.com/news/wales/2025-05-06/senedd-election-2026-the-major-changes-coming-in" class="const-highlight1">here</a>.</p>
-            <p><span class='const-highlight'>Browse the candidates in your area:</span></p>
-            <iframe 
-              src="${flourishUrl}" 
-              frameborder="0" 
-              scrolling="no" 
-              allowfullscreen>
-            </iframe>
-          `;
-        } else {
-          flourishContainer.innerHTML = '';
-        }
-      }
-
       async function lookupByPostcode(postcode) {
         resultDiv.textContent = 'Looking up constituency…';
         try {
