@@ -160,7 +160,7 @@
       #flourish-container iframe {
         height: 1600px; 
       }
-    }   /* ← Added missing brace */
+    }
   </style>
 </head>
 <body>
@@ -306,6 +306,8 @@
         } else {
           infoDiv.innerHTML = '';
         }
+      }   <!-- FIXED BRACE -->
+
       async function lookupByPostcode(postcode) {
         resultDiv.textContent = 'Looking up constituency…';
         try {
@@ -331,21 +333,22 @@
         const postcode = document.getElementById('postcode').value.trim();
         await lookupByPostcode(postcode);
       });
-    locationBtn.addEventListener('click', () => {
-  if (!navigator.geolocation) return resultDiv.textContent = 'Geolocation not supported.';
 
-  navigator.geolocation.getCurrentPosition(async pos => {
-    try {
-      const res = await fetch(`https://api.postcodes.io/postcodes?lon=${pos.coords.longitude}&lat=${pos.coords.latitude}`);
-      const postcode = res.ok ? (await res.json()).result[0].postcode : null;
-      if (!postcode) return resultDiv.textContent = 'Could not determine postcode.';
-      document.getElementById('postcode').value = postcode;
-      await lookupByPostcode(postcode);
-    } catch {
-      resultDiv.textContent = 'Error retrieving postcode from your location.';
-    }
-  }, () => resultDiv.textContent = 'Unable to retrieve your location.');
-});
+      locationBtn.addEventListener('click', () => {
+        if (!navigator.geolocation) return resultDiv.textContent = 'Geolocation not supported.';
+
+        navigator.geolocation.getCurrentPosition(async pos => {
+          try {
+            const res = await fetch(`https://api.postcodes.io/postcodes?lon=${pos.coords.longitude}&lat=${pos.coords.latitude}`);
+            const postcode = res.ok ? (await res.json()).result[0].postcode : null;
+            if (!postcode) return resultDiv.textContent = 'Could not determine postcode.';
+            document.getElementById('postcode').value = postcode;
+            await lookupByPostcode(postcode);
+          } catch {
+            resultDiv.textContent = 'Error retrieving postcode from your location.';
+          }
+        }, () => resultDiv.textContent = 'Unable to retrieve your location.');
+      });
     })();
   </script>
 </body>
