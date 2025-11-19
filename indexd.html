@@ -148,12 +148,7 @@
       width: 100%;
       height: auto;
     }
-     #flourish-container iframe {
-    width: 100%;
-    height: 600px;
-    border: 0;
-  }
-}
+    
     /* Small screen adjustments */
     @media (max-width: 480px) {
       h2 {
@@ -162,10 +157,6 @@
       input[type="text"], button[type="submit"] {
         font-size: 0.95rem;
       }
-      #flourish-container iframe {
-      height: 1600px; 
-      }
-    }
   </style>
 </head>
 <body>
@@ -203,7 +194,6 @@
     <div id="result" aria-live="polite"></div>
     <div id="svg-map" style="width:100%; margin-top:1rem;"></div>
     <div id="constituency-info" style="margin-top:1rem;"></div>
-    <div id="flourish-container" style="margin-top:1rem;"></div>
     <div class="data-source">Data from Senedd Cymru/Welsh Parliament • Your data is used temporarily for this search and is not recorded.</div>
   </div>
 
@@ -215,7 +205,6 @@
       const resultDiv = document.getElementById('result');
       const svgContainer = document.getElementById('svg-map');
       const infoDiv = document.getElementById('constituency-info');
-      const flourishContainer = document.getElementById('flourish-container');
       const locationBtn = document.getElementById('location-btn');
       const tooltip = document.getElementById('map-tooltip');
       let boundaries = null;
@@ -247,7 +236,6 @@
         resultDiv.innerHTML = `<p>Your 2026 Senedd constituency is: <span class='const-highlight'>${constituencyName}</span></p>`;
         svgContainer.innerHTML = '';
         infoDiv.innerHTML = '';
-        flourishContainer.innerHTML = '';
 
         try {
           const svgRes = await fetch(`svg/${matchedConstituencyId}.svg`);
