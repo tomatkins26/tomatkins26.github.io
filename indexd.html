@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Find Your 2026 Senedd Candidates</title>
+  <title>Find Your 2026 Senedd Constituency</title>
   <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
   <style>
    html, body {
@@ -51,13 +51,13 @@
       min-width: 150px;
       padding: 0.5rem;
       font-size: 1rem;
-      border: 1px solid #006473;
+      border: 1px solid #F54927;
       border-radius: 0;
       outline-offset: 2px;
       box-sizing: border-box;
     }
     input[type="text"]:focus {
-      outline: 2px solid #006473;
+      outline: 2px solid #F54927;
     }
     button[type="submit"] {
       margin-top: 1rem;
@@ -66,25 +66,25 @@
       font-size: 1rem;
       font-weight: 700;
       color: white;
-      background-color: #006473;
+      background-color: #F54927;
       border: none;
       border-radius: 0;
       cursor: pointer;
     }
     button[type="submit"]:hover {
-      background-color: #004f5c;
+      background-color: #F87C63;
     }
     #result {
       margin-top: 1.5rem;
       font-weight: 600;
     }
      .const-highlight {
-      color: #006473;
+      color: #F54927;
       font-weight: 700;
       text-decoration: none;
     } 
     .const-highlight1 {
-      color: #006473;
+      color: #F54927;
       font-weight: 700;
       text-decoration: none;
     }
@@ -102,29 +102,29 @@
       cursor: pointer;
       width: 32px;
       height: 32px;
-      fill: #006473;
-      stroke: #006473;
+      fill: #F54927;
+      stroke: #F54927;
       stroke-width: 2;
       border-radius: 50%;
       transition: fill 0.2s, stroke 0.2s;
       flex-shrink: 0;
     }
     #location-btn:hover {
-      fill: #004f5c;
-      stroke: #004f5c;
+      fill: #F87C63;
+      stroke: #F87C63;
     }
     #map-tooltip {
       position: absolute;
       display: none;
       pointer-events: none;
-      background: #006473;
+      background: #F54927;
       color: #fff;
       padding: 8px 12px;
       font-size: 1rem;
       font-weight: 600;
       white-space: nowrap;
       transform: translate(-50%, -100%);
-      border: 0 solid #006473;
+      border: 0 solid #F54927;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       z-index: 1000;
     }
@@ -139,8 +139,8 @@
       border-color: #fff transparent transparent transparent;
     }
     .highlighted-const {
-      fill: #006473 !important;
-      stroke: #004f5c !important;
+      fill: #F54927 !important;
+      stroke: #F87C63 !important;
       stroke-width: 3px !important;
       transition: fill 0.3s ease, stroke 0.3s ease;
     }
@@ -170,7 +170,7 @@
 </head>
 <body>
   <div class="container" role="region" aria-label="Senedd constituency lookup">
-    <h2>Find Your 2026 Senedd Candidates</h2>
+    <h2>Find Your 2026 Senedd Constituency</h2>
     <form id="lookup-form">
       <label for="postcode">Enter your postcode:</label>
       <div class="postcode-container">
@@ -307,9 +307,9 @@
                   const name = shape.querySelector('title')?.textContent;
                   if (name) {
                     tooltip.textContent = name;
-                    tooltip.style.background = groupId === matchedConstituencyId ? '#006473' : '#fff';
-                    tooltip.style.color = groupId === matchedConstituencyId ? '#fff' : '#006473';
-                    tooltip.style.borderColor = groupId === matchedConstituencyId ? '#004f5c' : '#006473';
+                    tooltip.style.background = groupId === matchedConstituencyId ? '#F54927' : '#fff';
+                    tooltip.style.color = groupId === matchedConstituencyId ? '#fff' : '#F54927';
+                    tooltip.style.borderColor = groupId === matchedConstituencyId ? '#F87C63' : '#F54927';
                     tooltip.style.display = 'block';
                   }
                 });
