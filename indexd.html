@@ -61,14 +61,14 @@
       text-align: left;
       border: 0px solid #eee;
     }
-       #svg-map {
-  opacity: 0;
-  transition: opacity 0.6s ease-in;
-}
-
-#svg-map.fade-in {
-  opacity: 1;
-}
+        #svg-map svg {
+      opacity: 0;
+      transition: opacity 0.6s ease-in;
+    }
+    
+    #svg-map svg.fade-in {
+      opacity: 1;
+    }
     h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; }
     p.intro { margin-bottom: 1.25rem; color: #333; }
 
@@ -222,10 +222,10 @@
           if (!svgRes.ok) throw new Error('SVG not found');
           const svgText = await svgRes.text();
           svgContainer.innerHTML = svgText;
-
-          // Fade-in (container)
-          svgContainer.classList.add('fade-in');
-
+          const svgElement = svgContainer.querySelector('svg');
+          if (svgElement) {
+          svgElement.classList.add('fade-in');
+            }
           const svgElement = svgContainer.querySelector('svg');
 
           // Add descriptive aria labels for SEO + accessibility
