@@ -9,7 +9,7 @@
    html, body {
       height: 100%;
       margin: 0;
-      font-family: Arial, sans serif;
+      font-family: Arial, sans-serif;
       background-color: #fff;
       color: #000000;
       box-sizing: border-box;
@@ -24,7 +24,6 @@
       line-height: 1.6;
     }
 
-    /* 🔶 Rounded corners everywhere */
     * {
       border-radius: 8px;
     }
@@ -95,15 +94,6 @@
       color: #F54927;
       font-weight: 700;
       text-decoration: none;
-    } 
-    .const-highlight1 {
-      color: #F54927;
-      font-weight: 700;
-      text-decoration: none;
-    }
-    .const-highlight1:hover {
-      color: #000000;
-      text-decoration: none;
     }
 
     .data-source {
@@ -168,50 +158,30 @@
     }
 
     @media (max-width: 480px) {
-      h2 {
-        font-size: 1.25rem;
-      }
-      input[type="text"], button[type="submit"] {
-        font-size: 0.95rem;
-      }
+      h2 { font-size: 1.25rem; }
+      input[type="text"], button[type="submit"] { font-size: 0.95rem; }
     }
   </style>
 </head>
 <body>
-  <div class="container" role="region" aria-label="Senedd constituency lookup">
+  <div class="container">
     <h2>Find Your 2026 Senedd Constituency</h2>
     <form id="lookup-form">
       <label for="postcode">Enter your postcode:</label>
       <div class="postcode-container">
-        <input 
-          type="text" 
-          id="postcode" 
-          placeholder="e.g. CF99 1SN" 
-          required 
-          aria-required="true" 
-          aria-describedby="postcode-desc" 
-          autocomplete="postal-code"
-        />
-        <svg 
-          id="location-btn" 
-          role="button" 
-          tabindex="0" 
-          aria-label="Find my current location" 
-          viewBox="0 0 24 24"
-        >
+        <input type="text" id="postcode" placeholder="e.g. CF99 1SN" required autocomplete="postal-code" />
+        <svg id="location-btn" role="button" tabindex="0" aria-label="Find my current location" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="8" fill="none" />
           <circle cx="12" cy="12" r="4" />
         </svg>
       </div>
-      <div id="postcode-desc" style="font-size:0.8rem; color:#666; margin-top:0.2rem;">
-        Enter a Welsh postcode to find your constituency.
-      </div>
       <button type="submit">Look up</button>
     </form>
 
-    <div id="result" aria-live="polite"></div>
+    <div id="result"></div>
+    <div id="constituency-info"></div>
     <div id="svg-map" style="width:100%; margin-top:1rem;"></div>
-    <div id="constituency-info" style="margin-top:1rem;"></div>
+
     <div class="data-source">Data from Senedd Cymru/Welsh Parliament • Your data is used temporarily for this search and is not recorded.</div>
   </div>
 
@@ -268,67 +238,11 @@
         }
 
         const constituencyName = match.properties.enw_cymrae;
-        matchedConstituencyId = constituencyName.trim().replace(/[ŵô]/g, '').toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+        matchedConstituencyId = constituencyName.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
 
         resultDiv.innerHTML = `<p>Your 2026 Senedd constituency is: <span class='const-highlight'>${constituencyName}</span></p>`;
-        svgContainer.innerHTML = '';
-        infoDiv.innerHTML = '';
 
-        try {
-          const svgRes = await fetch(`svg/${matchedConstituencyId}.svg`);
-          if (!svgRes.ok) throw new Error('SVG not found');
-          const svgText = await svgRes.text();
-          svgContainer.innerHTML = svgText;
-
-          const svgElement = svgContainer.querySelector('svg');
-          if (svgElement) {
-            svgElement.querySelectorAll('g[id]').forEach(g => {
-              const groupId = g.getAttribute('id');
-              g.querySelectorAll('path, polygon, rect, circle').forEach(shape => {
-                if (!shape.querySelector('title')) {
-                  const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-                  title.textContent = groupId.replace(/-/g, ' ');
-                  shape.appendChild(title);
-                }
-                shape.addEventListener('mouseenter', e => {
-                  const name = shape.querySelector('title')?.textContent;
-                  if (name) {
-                    tooltip.textContent = name;
-                    tooltip.style.background = groupId === matchedConstituencyId ? '#F54927' : '#fff';
-                    tooltip.style.color = groupId === matchedConstituencyId ? '#fff' : '#F54927';
-                    tooltip.style.borderColor = groupId === matchedConstituencyId ? '#F87C63' : '#F54927';
-                    tooltip.style.display = 'block';
-                  }
-                });
-                shape.addEventListener('mousemove', e => {
-                  tooltip.style.left = `${e.pageX}px`;
-                  tooltip.style.top = `${e.pageY - 16}px`;
-                });
-                shape.addEventListener('mouseleave', () => {
-                  tooltip.style.display = 'none';
-                });
-              });
-            });
-
-            svgElement.querySelectorAll('.highlighted-const').forEach(el => {
-              el.classList.remove('highlighted-const');
-              el.style.fill = '';
-              el.style.stroke = '';
-              el.style.strokeWidth = '';
-            });
-
-            const matchElement = svgElement.querySelector(`#${matchedConstituencyId}`);
-            if (matchElement) matchElement.classList.add('highlighted-const');
-
-            svgElement.querySelectorAll('path').forEach(path => {
-              path.addEventListener('mouseenter', () => path.style.opacity = 0.7);
-              path.addEventListener('mouseleave', () => path.style.opacity = 1);
-            });
-          }
-        } catch (svgErr) {
-          svgContainer.innerHTML = '<p style="color:red;">Could not load map for this constituency.</p>';
-        }
-
+        // *** CHANGED SECTION — summary now placed BEFORE the map ***
         const summary = constituencySummaries[matchedConstituencyId];
         if (summary) {
           infoDiv.innerHTML = `
@@ -337,6 +251,18 @@
           `;
         } else {
           infoDiv.innerHTML = '';
+        }
+        // *** END CHANGE ***
+
+        svgContainer.innerHTML = '';
+
+        try {
+          const svgRes = await fetch(`svg/${matchedConstituencyId}.svg`);
+          if (!svgRes.ok) throw new Error('SVG not found');
+          const svgText = await svgRes.text();
+          svgContainer.innerHTML = svgText;
+        } catch {
+          svgContainer.innerHTML = '<p style="color:red;">Could not load map for this constituency.</p>';
         }
       }
 
@@ -354,7 +280,7 @@
 
           const { longitude, latitude } = data.result;
           await lookupByCoords(longitude, latitude);
-        } catch (err) {
+        } catch {
           resultDiv.textContent = 'Something went wrong. Please check your postcode and try again.';
         }
       }
