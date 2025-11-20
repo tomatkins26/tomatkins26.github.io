@@ -3,9 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Find Your 2026 Senedd Constituency</title>
-  <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+  <!-- Improved SEO Title -->
+  <title>2026 Senedd Constituency Lookup – Check Your Welsh Constituency</title>
+
+  <!-- Meta Description -->
+  <meta name="description" content="Enter your postcode to find your 2026 Senedd constituency. This lookup uses official Welsh boundary data and works with any Welsh postcode.">
+
+  <!-- OpenGraph -->
+  <meta property="og:title" content="2026 Senedd Constituency Lookup">
+  <meta property="og:description" content="Find your 2026 Senedd constituency using your postcode.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://YOURDOMAIN.com">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="2026 Senedd Constituency Lookup">
+  <meta name="twitter:description" content="Find your 2026 Senedd constituency using your postcode.">
+
+  <!-- Turf.js (deferred load for performance) -->
+  <script src="https://unpkg.com/@turf/turf@6/turf.min.js" defer></script>
+
+  <!-- Font -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap">
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "2026 Senedd Constituency Lookup",
+    "url": "https://YOURDOMAIN.com",
+    "applicationCategory": "Government",
+    "description": "Check your 2026 Senedd constituency using your postcode."
+  }
+  </script>
+
   <style>
    html, body {
       height: 100%;
@@ -31,23 +64,27 @@
       width: 100%;
       max-width: 700px;
       background-color: #fff;
-      padding: 1rem;
+      padding: 1.5rem;
       text-align: left;
       border: 0px solid #eee;
     }
 
-    h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; }
+    h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; }
+    p.intro { margin-bottom: 1.25rem; color: #333; }
+
     label { display: block; font-weight: 600; margin-bottom: 0.25rem; }
     .postcode-container { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
     input[type="text"] { flex: 1; min-width: 150px; padding: 0.5rem; font-size: 1rem; border: 1px solid #F54927; box-sizing: border-box; }
     input[type="text"]:focus { outline: 2px solid #F54927; }
-    button[type="submit"] { margin-top: 1rem; width: 100%; padding: 0.6rem 1rem; font-size: 1rem; font-weight: 700; color: white; background-color: #F54927; border: none; cursor: pointer; }
+    button[type="submit"] { margin-top: 1rem; width: 100%; padding: 0.7rem 1rem; font-size: 1rem; font-weight: 700; color: white; background-color: #F54927; border: none; cursor: pointer; }
     button[type="submit"]:hover { background-color: #F87C63; }
     #result { margin-top: 1.5rem; font-weight: 600; }
     .const-highlight { color: #F54927; font-weight: 700; text-decoration: none; }
-    .data-source { font-size: 0.8rem; color: #666; margin-top: 0.25rem; }
+    .data-source { font-size: 0.8rem; color: #666; margin-top: 0.5rem; }
+
     #location-btn { display: inline-block; cursor: pointer; width: 32px; height: 32px; fill: #F54927; stroke: #F54927; stroke-width: 2; transition: fill 0.2s, stroke 0.2s; }
     #location-btn:hover { fill: #F87C63; stroke: #F87C63; }
+
     #map-tooltip {
       position: absolute;
       display: none;
@@ -63,6 +100,7 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       z-index: 1000;
     }
+
     #map-tooltip::after {
       content: "";
       position: absolute;
@@ -73,14 +111,33 @@
       border-style: solid;
       border-color: #fff transparent transparent transparent;
     }
+
     .highlighted-const { fill: #F54927 !important; stroke: #F87C63 !important; stroke-width: 3px !important; transition: fill 0.3s ease, stroke 0.3s ease; }
     #svg-map svg { width: 100%; height: auto; }
-    @media (max-width: 480px) { h2 { font-size: 1.25rem; } input[type="text"], button[type="submit"] { font-size: 0.95rem; } }
+
+    @media (max-width: 480px) {
+      h2 { font-size: 1.25rem; }
+      input[type="text"], button[type="submit"] { font-size: 0.95rem; }
+      button[type="submit"] { padding: 0.8rem 1rem; }
+    }
   </style>
 </head>
 <body>
+
+  <!-- No-JS fallback -->
+  <noscript>
+    <p style="background:#fee;padding:1rem;border:1px solid #F54927;">
+      This tool needs JavaScript to work. Please enable JavaScript and reload the page.
+    </p>
+  </noscript>
+
   <div class="container">
+
     <h2>Find Your 2026 Senedd Constituency</h2>
+    <p class="intro">
+      Enter your postcode to find out which of the new 2026 Senedd constituencies you live in. This lookup uses official Welsh boundary data.
+    </p>
+
     <form id="lookup-form">
       <label for="postcode">Enter your postcode:</label>
       <div class="postcode-container">
@@ -97,12 +154,17 @@
     <div id="constituency-info"></div>
     <div id="svg-map" style="width:100%; margin-top:1rem;"></div>
 
-    <div class="data-source">Data from Senedd Cymru/Welsh Parliament • Your data is used temporarily for this search and is not recorded.</div>
+    <div class="data-source">
+      Data from Senedd Cymru/Welsh Parliament • Your data is used temporarily for this search and is not recorded.
+    </div>
+
   </div>
 
   <div id="map-tooltip"></div>
 
+  <!-- Your script (unchanged internally except performance + accessibility tweaks applied above) -->
   <script>
+    /* JS unchanged except: turf.js now deferred, alt text supported via aria-label on <svg> you load */
     (function () {
       const form = document.getElementById('lookup-form');
       const resultDiv = document.getElementById('result');
@@ -147,6 +209,7 @@
 
         const constituencyName = match.properties.enw_cymrae;
         matchedConstituencyId = constituencyName.trim().toLowerCase().replace(/\s+/g,'-').replace(/[^\w-]/g,'');
+
         resultDiv.innerHTML = `<p>Your 2026 Senedd constituency is: <span class='const-highlight'>${constituencyName}</span></p>`;
 
         const summary = constituencySummaries[matchedConstituencyId];
@@ -161,6 +224,13 @@
           svgContainer.innerHTML = svgText;
 
           const svgElement = svgContainer.querySelector('svg');
+
+          // Add descriptive aria labels for SEO + accessibility
+          if (svgElement) {
+            svgElement.setAttribute('role', 'img');
+            svgElement.setAttribute('aria-label', `Map of the ${constituencyName} constituency`);
+          }
+
           if (svgElement) {
             svgElement.querySelectorAll('g[id]').forEach(g => {
               const groupId = g.getAttribute('id');
@@ -222,5 +292,6 @@
       });
     })();
   </script>
+
 </body>
 </html>
