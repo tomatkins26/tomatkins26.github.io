@@ -25,9 +25,7 @@
       line-height: 1.6;
     }
 
-    * {
-      border-radius: 8px;
-    }
+    * { border-radius: 8px; }
 
     .container {
       width: 100%;
@@ -38,87 +36,18 @@
       border: 1px solid #eee;
     }
 
-    h2 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-    }
-
-    label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-    }
-
-    .postcode-container {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    input[type="text"] {
-      flex: 1;
-      min-width: 150px;
-      padding: 0.5rem;
-      font-size: 1rem;
-      border: 1px solid #F54927;
-      box-sizing: border-box;
-    }
-
-    input[type="text"]:focus {
-      outline: 2px solid #F54927;
-    }
-
-    button[type="submit"] {
-      margin-top: 1rem;
-      width: 100%;
-      padding: 0.6rem 1rem;
-      font-size: 1rem;
-      font-weight: 700;
-      color: white;
-      background-color: #F54927;
-      border: none;
-      cursor: pointer;
-    }
-
-    button[type="submit"]:hover {
-      background-color: #F87C63;
-    }
-
-    #result {
-      margin-top: 1.5rem;
-      font-weight: 600;
-    }
-
-    .const-highlight {
-      color: #F54927;
-      font-weight: 700;
-      text-decoration: none;
-    }
-
-    .data-source {
-      font-size: 0.8rem;
-      color: #666;
-      margin-top: 0.25rem;
-    }
-
-    #location-btn {
-      display: inline-block;
-      cursor: pointer;
-      width: 32px;
-      height: 32px;
-      fill: #F54927;
-      stroke: #F54927;
-      stroke-width: 2;
-      transition: fill 0.2s, stroke 0.2s;
-    }
-
-    #location-btn:hover {
-      fill: #F87C63;
-      stroke: #F87C63;
-    }
-
+    h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; }
+    label { display: block; font-weight: 600; margin-bottom: 0.25rem; }
+    .postcode-container { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    input[type="text"] { flex: 1; min-width: 150px; padding: 0.5rem; font-size: 1rem; border: 1px solid #F54927; box-sizing: border-box; }
+    input[type="text"]:focus { outline: 2px solid #F54927; }
+    button[type="submit"] { margin-top: 1rem; width: 100%; padding: 0.6rem 1rem; font-size: 1rem; font-weight: 700; color: white; background-color: #F54927; border: none; cursor: pointer; }
+    button[type="submit"]:hover { background-color: #F87C63; }
+    #result { margin-top: 1.5rem; font-weight: 600; }
+    .const-highlight { color: #F54927; font-weight: 700; text-decoration: none; }
+    .data-source { font-size: 0.8rem; color: #666; margin-top: 0.25rem; }
+    #location-btn { display: inline-block; cursor: pointer; width: 32px; height: 32px; fill: #F54927; stroke: #F54927; stroke-width: 2; transition: fill 0.2s, stroke 0.2s; }
+    #location-btn:hover { fill: #F87C63; stroke: #F87C63; }
     #map-tooltip {
       position: absolute;
       display: none;
@@ -134,7 +63,6 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       z-index: 1000;
     }
-
     #map-tooltip::after {
       content: "";
       position: absolute;
@@ -145,23 +73,9 @@
       border-style: solid;
       border-color: #fff transparent transparent transparent;
     }
-
-    .highlighted-const {
-      fill: #F54927 !important;
-      stroke: #F87C63 !important;
-      stroke-width: 3px !important;
-      transition: fill 0.3s ease, stroke 0.3s ease;
-    }
-
-    #svg-map svg {
-      width: 100%;
-      height: auto;
-    }
-
-    @media (max-width: 480px) {
-      h2 { font-size: 1.25rem; }
-      input[type="text"], button[type="submit"] { font-size: 0.95rem; }
-    }
+    .highlighted-const { fill: #F54927 !important; stroke: #F87C63 !important; stroke-width: 3px !important; transition: fill 0.3s ease, stroke 0.3s ease; }
+    #svg-map svg { width: 100%; height: auto; }
+    @media (max-width: 480px) { h2 { font-size: 1.25rem; } input[type="text"], button[type="submit"] { font-size: 0.95rem; } }
   </style>
 </head>
 <body>
@@ -224,36 +138,19 @@
         .catch(() => resultDiv.textContent = 'Error loading constituency data.');
 
       async function lookupByCoords(longitude, latitude) {
-        if (!boundaries) {
-          resultDiv.textContent = 'Constituency data not loaded yet.';
-          return;
-        }
+        if (!boundaries) { resultDiv.textContent = 'Constituency data not loaded yet.'; return; }
         resultDiv.textContent = 'Looking up constituency…';
 
         const userPoint = turf.point([longitude, latitude]);
         const match = boundaries.features.find(f => turf.booleanPointInPolygon(userPoint, f));
-
-        if (!match) {
-          resultDiv.textContent = 'There has been a problem. Try again.';
-          return;
-        }
+        if (!match) { resultDiv.textContent = 'There has been a problem. Try again.'; return; }
 
         const constituencyName = match.properties.enw_cymrae;
-        matchedConstituencyId = constituencyName.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-
+        matchedConstituencyId = constituencyName.trim().toLowerCase().replace(/\s+/g,'-').replace(/[^\w-]/g,'');
         resultDiv.innerHTML = `<p>Your 2026 Senedd constituency is: <span class='const-highlight'>${constituencyName}</span></p>`;
 
-        // *** CHANGED SECTION — summary now placed BEFORE the map ***
         const summary = constituencySummaries[matchedConstituencyId];
-        if (summary) {
-          infoDiv.innerHTML = `
-            <hr style="border: none; border-top: 1px solid #ccc; margin: 1rem 0;">
-            <p>${summary}</p>
-          `;
-        } else {
-          infoDiv.innerHTML = '';
-        }
-        // *** END CHANGE ***
+        infoDiv.innerHTML = summary ? `<hr style='border:none;border-top:1px solid #ccc;margin:1rem 0;'><p>${summary}</p>` : '';
 
         svgContainer.innerHTML = '';
 
@@ -262,6 +159,37 @@
           if (!svgRes.ok) throw new Error('SVG not found');
           const svgText = await svgRes.text();
           svgContainer.innerHTML = svgText;
+
+          const svgElement = svgContainer.querySelector('svg');
+          if (svgElement) {
+            svgElement.querySelectorAll('g[id]').forEach(g => {
+              const groupId = g.getAttribute('id');
+              g.querySelectorAll('path, polygon, rect, circle').forEach(shape => {
+                if (!shape.querySelector('title')) {
+                  const title = document.createElementNS('http://www.w3.org/2000/svg','title');
+                  title.textContent = groupId.replace(/-/g,' ');
+                  shape.appendChild(title);
+                }
+                shape.addEventListener('mouseenter', e => {
+                  const name = shape.querySelector('title')?.textContent;
+                  if (name) {
+                    tooltip.textContent = name;
+                    tooltip.style.background = groupId === matchedConstituencyId ? '#F54927' : '#fff';
+                    tooltip.style.color = groupId === matchedConstituencyId ? '#fff' : '#F54927';
+                    tooltip.style.borderColor = groupId === matchedConstituencyId ? '#F87C63' : '#F54927';
+                    tooltip.style.display = 'block';
+                  }
+                });
+                shape.addEventListener('mousemove', e => {
+                  tooltip.style.left = `${e.pageX}px`;
+                  tooltip.style.top = `${e.pageY - 16}px`;
+                });
+                shape.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+              });
+            });
+            const matchElement = svgElement.querySelector(`#${matchedConstituencyId}`);
+            if (matchElement) matchElement.classList.add('highlighted-const');
+          }
         } catch {
           svgContainer.innerHTML = '<p style="color:red;">Could not load map for this constituency.</p>';
         }
@@ -272,29 +200,16 @@
         try {
           const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
           const data = await res.json();
-
-          if (!data.result) throw new Error('Invalid postcode');
-          if (data.result.country !== 'Wales') {
-            resultDiv.textContent = 'Sorry, this tool only supports Welsh postcodes.';
-            return;
-          }
-
+          if (!data.result || data.result.country !== 'Wales') { resultDiv.textContent = 'Sorry, this tool only supports Welsh postcodes.'; return; }
           const { longitude, latitude } = data.result;
           await lookupByCoords(longitude, latitude);
-        } catch {
-          resultDiv.textContent = 'Something went wrong. Please check your postcode and try again.';
-        }
+        } catch { resultDiv.textContent = 'Something went wrong. Please check your postcode and try again.'; }
       }
 
-      form.addEventListener('submit', async e => {
-        e.preventDefault();
-        const postcode = document.getElementById('postcode').value.trim();
-        await lookupByPostcode(postcode);
-      });
+      form.addEventListener('submit', async e => { e.preventDefault(); await lookupByPostcode(document.getElementById('postcode').value.trim()); });
 
       locationBtn.addEventListener('click', () => {
         if (!navigator.geolocation) return resultDiv.textContent = 'Geolocation not supported.';
-
         navigator.geolocation.getCurrentPosition(async pos => {
           try {
             const res = await fetch(`https://api.postcodes.io/postcodes?lon=${pos.coords.longitude}&lat=${pos.coords.latitude}`);
@@ -302,9 +217,7 @@
             if (!postcode) return resultDiv.textContent = 'Could not determine postcode.';
             document.getElementById('postcode').value = postcode;
             await lookupByPostcode(postcode);
-          } catch {
-            resultDiv.textContent = 'Error retrieving postcode from your location.';
-          }
+          } catch { resultDiv.textContent = 'Error retrieving postcode from your location.'; }
         }, () => resultDiv.textContent = 'Unable to retrieve your location.');
       });
     })();
