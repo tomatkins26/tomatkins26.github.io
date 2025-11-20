@@ -151,130 +151,135 @@ body.dark-mode #map-tooltip {
   </div>
 
   <div id="map-tooltip"></div>
-
-  <script>
-    (function () {
-      const form = document.getElementById('lookup-form');
-      const resultDiv = document.getElementById('result');
-      const svgContainer = document.getElementById('svg-map');
-      const infoDiv = document.getElementById('constituency-info');
-      const locationBtn = document.getElementById('location-btn');
-      const tooltip = document.getElementById('map-tooltip');
-      let boundaries = null;
-      let matchedConstituencyId = null;
-
-      const constituencySummaries = {
-        "afan-ogwr-rhondda": "The new Afan Ogwr Rhondda constituency brings together Aberafan Maesteg and Rhondda and Ogmore.",
-        "bangor-conwy-mn": "The new Bangor Conwy Môn constituency was created by combining Bangor Aberconwy and Ynys Môn.",
-        "blaenau-gwent-caerffili-rhymni": "The new Blaenau Gwent Caerffili Rhymni constituency combines Blaenau Gwent and Rhymney with Caerphilly.",
-        "brycheiniog-tawe-nedd": "The new Brycheiniog Tawe Nedd constituency merges Brecon, Radnor and Cwm Tawe with Neath and Swansea East.",
-        "caerdydd-ffynnon-taf": "The new Caerdydd Ffynnon Taf constituency joins Cardiff North and Cardiff East.",
-        "caerdydd-penarth": "The new Caerdydd Penarth constituency combines Cardiff West with Cardiff South and Penarth.",
-        "casnewydd-islwyn": "The new Casnewydd Islwyn constituency merges Newport East, Newport West and Islwyn.",
-        "ceredigion-penfro": "Ceredigion Penfro combines Ceredigion Preseli with Mid and South Pembrokeshire.",
-        "clwyd": "The new Clwyd constituency merges Clwyd East and Clwyd North.",
-        "fflint-wrecsam": "Fflint Wrecsam consists of Alyn and Deeside and Wrexham.",
-        "gwynedd-maldwyn": "The new Gwynedd Maldwyn constituency merges Dwyfor Meirionnydd with Montgomeryshire and Glyndŵr.",
-        "gyr-abertawe": "Gŵyr Abertawe is formed from Swansea West and Gower.",
-        "pen-y-bont-bro-morgannwg": "Pen-y-bont Bro Morgannwg merges Bridgend and Vale of Glamorgan.",
-        "pontypridd-cynon-merthyr": "Pontypridd Cynon Merthyr unites Pontypridd with Merthyr Tydfil and Aberdare.",
-        "sir-fynwy-torfaen": "Sir Fynwy Torfaen merges Monmouthshire and Torfaen.",
-        "sir-gaerfyrddin": "Sir Gaerfyrddin merges Caerfyrddin (Carmarthen) and Llanelli."
-      };
-
-      fetch('senedd2026.json')
-        .then(res => res.json())
-        .then(data => boundaries = data)
-        .catch(() => resultDiv.textContent = 'Error loading constituency data.');
-
-      async function lookupByCoords(longitude, latitude) {
-        if (!boundaries) { resultDiv.textContent = 'Constituency data not loaded yet.'; return; }
-        resultDiv.textContent = 'Looking up constituency…';
-
-        const userPoint = turf.point([longitude, latitude]);
-        const match = boundaries.features.find(f => turf.booleanPointInPolygon(userPoint, f));
-        if (!match) { resultDiv.textContent = 'There has been a problem. Try again.'; return; }
-
-        const constituencyName = match.properties.enw_cymrae;
-        matchedConstituencyId = constituencyName.trim().toLowerCase().replace(/\s+/g,'-').replace(/[^\w-]/g,'');
-        resultDiv.innerHTML = `<p>Your 2026 Senedd constituency is: <span class='const-highlight'>${constituencyName}</span></p>`;
-
-        const summary = constituencySummaries[matchedConstituencyId];
-        infoDiv.innerHTML = summary ? `<hr style='border:none;border-top:1px solid #ccc;margin:1rem 0;'><p>${summary}</p>` : '';
-
-        svgContainer.innerHTML = '';
-
-        try {
-          const svgRes = await fetch(`svg/${matchedConstituencyId}.svg`);
-          if (!svgRes.ok) throw new Error('SVG not found');
-          const svgText = await svgRes.text();
-          svgContainer.innerHTML = svgText;
-
-          const svgElement = svgContainer.querySelector('svg');
-          if (svgElement) {
-            svgElement.querySelectorAll('g[id]').forEach(g => {
-              const groupId = g.getAttribute('id');
-              g.querySelectorAll('path, polygon, rect, circle').forEach(shape => {
-                if (!shape.querySelector('title')) {
-                  const title = document.createElementNS('http://www.w3.org/2000/svg','title');
-                  title.textContent = groupId.replace(/-/g,' ');
-                  shape.appendChild(title);
+    <script>
+  (function () {
+    const form = document.getElementById('lookup-form');
+    const resultDiv = document.getElementById('result');
+    const svgContainer = document.getElementById('svg-map');
+    const infoDiv = document.getElementById('constituency-info');
+    const locationBtn = document.getElementById('location-btn');
+    const tooltip = document.getElementById('map-tooltip');
+    const themeBtn = document.getElementById('theme-toggle');
+    let boundaries = null;
+    let matchedConstituencyId = null;
+  
+    const constituencySummaries = {
+      "afan-ogwr-rhondda": "The new Afan Ogwr Rhondda constituency brings together Aberafan Maesteg and Rhondda and Ogmore.",
+      "bangor-conwy-mn": "The new Bangor Conwy Môn constituency was created by combining Bangor Aberconwy and Ynys Môn.",
+      "blaenau-gwent-caerffili-rhymni": "The new Blaenau Gwent Caerffili Rhymni constituency combines Blaenau Gwent and Rhymney with Caerphilly.",
+      "brycheiniog-tawe-nedd": "The new Brycheiniog Tawe Nedd constituency merges Brecon, Radnor and Cwm Tawe with Neath and Swansea East.",
+      "caerdydd-ffynnon-taf": "The new Caerdydd Ffynnon Taf constituency joins Cardiff North and Cardiff East.",
+      "caerdydd-penarth": "The new Caerdydd Penarth constituency combines Cardiff West with Cardiff South and Penarth.",
+      "casnewydd-islwyn": "The new Casnewydd Islwyn constituency merges Newport East, Newport West and Islwyn.",
+      "ceredigion-penfro": "Ceredigion Penfro combines Ceredigion Preseli with Mid and South Pembrokeshire.",
+      "clwyd": "The new Clwyd constituency merges Clwyd East and Clwyd North.",
+      "fflint-wrecsam": "Fflint Wrecsam consists of Alyn and Deeside and Wrexham.",
+      "gwynedd-maldwyn": "The new Gwynedd Maldwyn constituency merges Dwyfor Meirionnydd with Montgomeryshire and Glyndŵr.",
+      "gyr-abertawe": "Gŵyr Abertawe is formed from Swansea West and Gower.",
+      "pen-y-bont-bro-morgannwg": "Pen-y-bont Bro Morgannwg merges Bridgend and Vale of Glamorgan.",
+      "pontypridd-cynon-merthyr": "Pontypridd Cynon Merthyr unites Pontypridd with Merthyr Tydfil and Aberdare.",
+      "sir-fynwy-torfaen": "Sir Fynwy Torfaen merges Monmouthshire and Torfaen.",
+      "sir-gaerfyrddin": "Sir Gaerfyrddin merges Caerfyrddin (Carmarthen) and Llanelli."
+    };
+  
+    fetch('senedd2026.json')
+      .then(res => res.json())
+      .then(data => boundaries = data)
+      .catch(() => resultDiv.textContent = 'Error loading constituency data.');
+  
+    async function lookupByCoords(longitude, latitude) {
+      if (!boundaries) { resultDiv.textContent = 'Constituency data not loaded yet.'; return; }
+      resultDiv.textContent = 'Looking up constituency…';
+  
+      const userPoint = turf.point([longitude, latitude]);
+      const match = boundaries.features.find(f => turf.booleanPointInPolygon(userPoint, f));
+      if (!match) { resultDiv.textContent = 'There has been a problem. Try again.'; return; }
+  
+      const constituencyName = match.properties.enw_cymrae;
+      matchedConstituencyId = constituencyName.trim().toLowerCase().replace(/\s+/g,'-').replace(/[^\w-]/g,'');
+      resultDiv.innerHTML = `<p>Your 2026 Senedd constituency is: <span class='const-highlight'>${constituencyName}</span></p>`;
+  
+      const summary = constituencySummaries[matchedConstituencyId];
+      infoDiv.innerHTML = summary ? `<hr style='border:none;border-top:1px solid #ccc;margin:1rem 0;'><p>${summary}</p>` : '';
+  
+      svgContainer.innerHTML = '';
+  
+      try {
+        const svgRes = await fetch(`svg/${matchedConstituencyId}.svg`);
+        if (!svgRes.ok) throw new Error('SVG not found');
+        const svgText = await svgRes.text();
+        svgContainer.innerHTML = svgText;
+  
+        const svgElement = svgContainer.querySelector('svg');
+        if (svgElement) {
+          svgElement.querySelectorAll('g[id]').forEach(g => {
+            const groupId = g.getAttribute('id');
+            g.querySelectorAll('path, polygon, rect, circle').forEach(shape => {
+              if (!shape.querySelector('title')) {
+                const title = document.createElementNS('http://www.w3.org/2000/svg','title');
+                title.textContent = groupId.replace(/-/g,' ');
+                shape.appendChild(title);
+              }
+              shape.addEventListener('mouseenter', e => {
+                const name = shape.querySelector('title')?.textContent;
+                if (name) {
+                  tooltip.textContent = name;
+                  tooltip.style.background = groupId === matchedConstituencyId ? '#F54927' : '#fff';
+                  tooltip.style.color = groupId === matchedConstituencyId ? '#fff' : '#F54927';
+                  tooltip.style.borderColor = groupId === matchedConstituencyId ? '#F87C63' : '#F54927';
+                  tooltip.style.display = 'block';
                 }
-                shape.addEventListener('mouseenter', e => {
-                  const name = shape.querySelector('title')?.textContent;
-                  if (name) {
-                    tooltip.textContent = name;
-                    tooltip.style.background = groupId === matchedConstituencyId ? '#F54927' : '#fff';
-                    tooltip.style.color = groupId === matchedConstituencyId ? '#fff' : '#F54927';
-                    tooltip.style.borderColor = groupId === matchedConstituencyId ? '#F87C63' : '#F54927';
-                    tooltip.style.display = 'block';
-                  }
-                });
-                shape.addEventListener('mousemove', e => {
-                  tooltip.style.left = `${e.pageX}px`;
-                  tooltip.style.top = `${e.pageY - 16}px`;
-                });
-                shape.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
               });
+              shape.addEventListener('mousemove', e => {
+                tooltip.style.left = `${e.pageX}px`;
+                tooltip.style.top = `${e.pageY - 16}px`;
+              });
+              shape.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
             });
-            const matchElement = svgElement.querySelector(`#${matchedConstituencyId}`);
-            if (matchElement) matchElement.classList.add('highlighted-const');
-          }
-        } catch {
-          svgContainer.innerHTML = '<p style="color:red;">Could not load map for this constituency.</p>';
+          });
+          const matchElement = svgElement.querySelector(`#${matchedConstituencyId}`);
+          if (matchElement) matchElement.classList.add('highlighted-const');
         }
+      } catch {
+        svgContainer.innerHTML = '<p style="color:red;">Could not load map for this constituency.</p>';
       }
-
-      async function lookupByPostcode(postcode) {
-        resultDiv.textContent = 'Looking up constituency…';
+    }
+  
+    async function lookupByPostcode(postcode) {
+      resultDiv.textContent = 'Looking up constituency…';
+      try {
+        const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
+        const data = await res.json();
+        if (!data.result || data.result.country !== 'Wales') { resultDiv.textContent = 'Sorry, this tool only supports Welsh postcodes.'; return; }
+        const { longitude, latitude } = data.result;
+        await lookupByCoords(longitude, latitude);
+      } catch { resultDiv.textContent = 'Something went wrong. Please check your postcode and try again.'; }
+    }
+  
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      await lookupByPostcode(document.getElementById('postcode').value.trim());
+    });
+  
+    locationBtn.addEventListener('click', () => {
+      if (!navigator.geolocation) return resultDiv.textContent = 'Geolocation not supported.';
+      navigator.geolocation.getCurrentPosition(async pos => {
         try {
-          const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
-          const data = await res.json();
-          if (!data.result || data.result.country !== 'Wales') { resultDiv.textContent = 'Sorry, this tool only supports Welsh postcodes.'; return; }
-          const { longitude, latitude } = data.result;
-          await lookupByCoords(longitude, latitude);
-        } catch { resultDiv.textContent = 'Something went wrong. Please check your postcode and try again.'; }
-      }
-
-      form.addEventListener('submit', async e => { e.preventDefault(); await lookupByPostcode(document.getElementById('postcode').value.trim()); });
-
-      locationBtn.addEventListener('click', () => {
-        if (!navigator.geolocation) return resultDiv.textContent = 'Geolocation not supported.';
-        navigator.geolocation.getCurrentPosition(async pos => {
-          try {
-            const res = await fetch(`https://api.postcodes.io/postcodes?lon=${pos.coords.longitude}&lat=${pos.coords.latitude}`);
-            const postcode = res.ok ? (await res.json()).result[0].postcode : null;
-            if (!postcode) return resultDiv.textContent = 'Could not determine postcode.';
-            document.getElementById('postcode').value = postcode;
-            await lookupByPostcode(postcode);
-          } catch { resultDiv.textContent = 'Error retrieving postcode from your location.'; }
-        }, () => resultDiv.textContent = 'Unable to retrieve your location.');
-         const themeBtn = document.getElementById('theme-toggle');
-      themeBtn.addEventListener('click', () => {
-        document.body.classList.toggle('dark-mode');
-        themeBtn.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
-      });
-    })();
+          const res = await fetch(`https://api.postcodes.io/postcodes?lon=${pos.coords.longitude}&lat=${pos.coords.latitude}`);
+          const postcode = res.ok ? (await res.json()).result[0].postcode : null;
+          if (!postcode) return resultDiv.textContent = 'Could not determine postcode.';
+          document.getElementById('postcode').value = postcode;
+          await lookupByPostcode(postcode);
+        } catch { resultDiv.textContent = 'Error retrieving postcode from your location.'; }
+      }, () => resultDiv.textContent = 'Unable to retrieve your location.');
+    });
+  
+    themeBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      themeBtn.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+    });
+  
+  })();
   </script>
 </body>
 </html>
