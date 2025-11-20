@@ -243,7 +243,6 @@
 
         resultDiv.innerHTML = `<p>Your 2026 Senedd constituency is: <span class='const-highlight'>${constituencyName}</span></p>`;
 
-        // *** CHANGED SECTION — summary now placed BEFORE the map ***
         const summary = constituencySummaries[matchedConstituencyId];
         if (summary) {
           infoDiv.innerHTML = `
@@ -253,7 +252,6 @@
         } else {
           infoDiv.innerHTML = '';
         }
-        // *** END CHANGE ***
 
         svgContainer.innerHTML = '';
 
@@ -262,6 +260,9 @@
           if (!svgRes.ok) throw new Error('SVG not found');
           const svgText = await svgRes.text();
           svgContainer.innerHTML = svgText;
+
+          // Attach tooltip events
+          attachTooltipEvents();
         } catch {
           svgContainer.innerHTML = '<p style="color:red;">Could not load map for this constituency.</p>';
         }
@@ -307,6 +308,39 @@
           }
         }, () => resultDiv.textContent = 'Unable to retrieve your location.');
       });
+
+      // Tooltip function
+      function attachTooltipEvents() {
+        const paths = svgContainer.querySelectorAll('path, polygon, circle'); 
+        paths.forEach(el => {
+          el.addEventListener('mouseenter', () => {
+            const name = el.getAttribute('data-name') || el.getAttribute('id') || 'Constituency';
+            tooltip.textContent = name;
+            tooltip.style.display = 'block';
+          });
+
+          el.addEventListener('mousemove', e => {
+            const tooltipRect = tooltip.getBoundingClientRect();
+            const pageWidth = window.innerWidth;
+            const pageHeight = window.innerHeight;
+
+            let left = e.pageX;
+            let top = e.pageY - 10;
+
+            if (left + tooltipRect.width > pageWidth) left = pageWidth - tooltipRect.width - 10;
+            if (left < 0) left = 10;
+            if (top < 0) top = e.pageY + 20;
+            if (top + tooltipRect.height > pageHeight) top = pageHeight - tooltipRect.height - 10;
+
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+          });
+
+          el.addEventListener('mouseleave', () => {
+            tooltip.style.display = 'none';
+          });
+        });
+      }
     })();
   </script>
 </body>
