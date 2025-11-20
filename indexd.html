@@ -23,42 +23,53 @@
       max-width: 100%;
       line-height: 1.6;
     }
+
+    /* 🔶 Rounded corners everywhere */
+    * {
+      border-radius: 8px;
+    }
+
     .container {
       width: 100%;
       max-width: 700px;
       background-color: #fff;
       padding: 1rem;
       text-align: left;
+      border: 1px solid #eee;
     }
+
     h2 {
       font-size: 1.5rem;
       font-weight: 700;
       margin-bottom: 1rem;
     }
+
     label {
       display: block;
       font-weight: 600;
       margin-bottom: 0.25rem;
     }
+
     .postcode-container {
       display: flex;
       align-items: center;
       gap: 0.5rem;
       flex-wrap: wrap;
     }
+
     input[type="text"] {
       flex: 1;
       min-width: 150px;
       padding: 0.5rem;
       font-size: 1rem;
       border: 1px solid #F54927;
-      border-radius: 2;
-      outline-offset: 2px;
       box-sizing: border-box;
     }
+
     input[type="text"]:focus {
       outline: 2px solid #F54927;
     }
+
     button[type="submit"] {
       margin-top: 1rem;
       width: 100%;
@@ -68,17 +79,19 @@
       color: white;
       background-color: #F54927;
       border: none;
-      border-radius: 2;
       cursor: pointer;
     }
+
     button[type="submit"]:hover {
       background-color: #F87C63;
     }
+
     #result {
       margin-top: 1.5rem;
       font-weight: 600;
     }
-     .const-highlight {
+
+    .const-highlight {
       color: #F54927;
       font-weight: 700;
       text-decoration: none;
@@ -91,12 +104,14 @@
     .const-highlight1:hover {
       color: #000000;
       text-decoration: none;
-}
+    }
+
     .data-source {
       font-size: 0.8rem;
       color: #666;
       margin-top: 0.25rem;
     }
+
     #location-btn {
       display: inline-block;
       cursor: pointer;
@@ -105,14 +120,14 @@
       fill: #F54927;
       stroke: #F54927;
       stroke-width: 2;
-      border-radius: 50%;
       transition: fill 0.2s, stroke 0.2s;
-      flex-shrink: 0;
     }
+
     #location-btn:hover {
       fill: #F87C63;
       stroke: #F87C63;
     }
+
     #map-tooltip {
       position: absolute;
       display: none;
@@ -128,6 +143,7 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       z-index: 1000;
     }
+
     #map-tooltip::after {
       content: "";
       position: absolute;
@@ -138,17 +154,19 @@
       border-style: solid;
       border-color: #fff transparent transparent transparent;
     }
+
     .highlighted-const {
       fill: #F54927 !important;
       stroke: #F87C63 !important;
       stroke-width: 3px !important;
       transition: fill 0.3s ease, stroke 0.3s ease;
     }
+
     #svg-map svg {
       width: 100%;
       height: auto;
     }
-    
+
     @media (max-width: 480px) {
       h2 {
         font-size: 1.25rem;
@@ -210,24 +228,23 @@
       let boundaries = null;
       let matchedConstituencyId = null;
 
-      /* ✅ ADDED: constituency summaries so the script no longer errors */
       const constituencySummaries = {
         "afan-ogwr-rhondda": "The new Afan Ogwr Rhondda constituency brings together Aberafan Maesteg and Rhondda and Ogmore.",
         "bangor-conwy-mn": "The new Bangor Conwy Môn constituency was created by combining Bangor Aberconwy and Ynys Môn.",
-        "blaenau-gwent-caerffili-rhymni": "The new Blaenau Gwent Caerffili Rhymni constituency combines the former Blaenau Gwent and Rhymney constituency with Caerphilly.",
+        "blaenau-gwent-caerffili-rhymni": "The new Blaenau Gwent Caerffili Rhymni constituency combines Blaenau Gwent and Rhymney with Caerphilly.",
         "brycheiniog-tawe-nedd": "The new Brycheiniog Tawe Nedd constituency merges Brecon, Radnor and Cwm Tawe with Neath and Swansea East.",
-        "caerdydd-ffynnon-taf": "The new Caerdydd Ffynnon Taf constituency brings together the Cardiff North and Cardiff East constituencies.",
+        "caerdydd-ffynnon-taf": "The new Caerdydd Ffynnon Taf constituency joins Cardiff North and Cardiff East.",
         "caerdydd-penarth": "The new Caerdydd Penarth constituency combines Cardiff West with Cardiff South and Penarth.",
-        "casnewydd-islwyn": "The new Casnewydd Islwyn constituency is formed from Newport East and Newport West and Islwyn.",
-        "ceredigion-penfro": "Ceredigion Penfro combines the constituencies of Ceredigion Preseli and Mid and South Pembrokeshire.",
+        "casnewydd-islwyn": "The new Casnewydd Islwyn constituency merges Newport East, Newport West and Islwyn.",
+        "ceredigion-penfro": "Ceredigion Penfro combines Ceredigion Preseli with Mid and South Pembrokeshire.",
         "clwyd": "The new Clwyd constituency merges Clwyd East and Clwyd North.",
-        "fflint-wrecsam": "Fflint Wrecsam consists of the former Alyn and Deeside and Wrexham constituencies.",
-        "gwynedd-maldwyn": "The new Gwynedd Maldwyn constituency is formed by merging Dwyfor Meirionnydd with Montgomeryshire and Glyndŵr.",
-        "gyr-abertawe": "The new Gŵyr Abertawe constituency is formed from Swansea West and Gower.",
-        "pen-y-bont-bro-morgannwg": "The new Pen-y-bont Bro Morgannwg constituency is formed from the Westminster constituencies of Bridgend and Vale of Glamorgan.",
-        "pontypridd-cynon-merthyr": "The new Pontypridd Cynon Merthyr constituency unites Pontypridd and Merthyr Tydfil and Aberdare.",
-        "sir-fynwy-torfaen": "The new Sir Fynwy Torfaen constituency is created by merging Monmouthshire and Torfaen.",
-        "sir-gaerfyrddin": "The new Sir Gaerfyrddin constituency brings together Caerfyrddin (Carmarthen) and Llanelli."
+        "fflint-wrecsam": "Fflint Wrecsam consists of Alyn and Deeside and Wrexham.",
+        "gwynedd-maldwyn": "The new Gwynedd Maldwyn constituency merges Dwyfor Meirionnydd with Montgomeryshire and Glyndŵr.",
+        "gyr-abertawe": "Gŵyr Abertawe is formed from Swansea West and Gower.",
+        "pen-y-bont-bro-morgannwg": "Pen-y-bont Bro Morgannwg merges Bridgend and Vale of Glamorgan.",
+        "pontypridd-cynon-merthyr": "Pontypridd Cynon Merthyr unites Pontypridd with Merthyr Tydfil and Aberdare.",
+        "sir-fynwy-torfaen": "Sir Fynwy Torfaen merges Monmouthshire and Torfaen.",
+        "sir-gaerfyrddin": "Sir Gaerfyrddin merges Caerfyrddin (Carmarthen) and Llanelli."
       };
 
       fetch('senedd2026.json')
@@ -310,7 +327,6 @@
           }
         } catch (svgErr) {
           svgContainer.innerHTML = '<p style="color:red;">Could not load map for this constituency.</p>';
-          console.error(svgErr);
         }
 
         const summary = constituencySummaries[matchedConstituencyId];
