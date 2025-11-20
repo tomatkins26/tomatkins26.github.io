@@ -35,7 +35,43 @@
       text-align: left;
       border: 0px solid #eee;
     }
+    body.dark-mode {
+  background-color: #000;
+  color: #fff;
+}
 
+body.dark-mode input[type="text"] {
+  border-color: #888;
+  background-color: #222;
+  color: #fff;
+}
+
+body.dark-mode button[type="submit"] {
+  background-color: #444;
+}
+
+body.dark-mode button[type="submit"]:hover {
+  background-color: #666;
+}
+
+body.dark-mode .const-highlight {
+  color: #F54927;
+}
+
+body.dark-mode #location-btn {
+  fill: #fff;
+  stroke: #fff;
+}
+
+body.dark-mode #location-btn:hover {
+  fill: #ccc;
+  stroke: #ccc;
+}
+
+body.dark-mode #map-tooltip {
+  background: #fff;
+  color: #000;
+}
     h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; }
     label { display: block; font-weight: 600; margin-bottom: 0.25rem; }
     .postcode-container { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
@@ -79,6 +115,20 @@
   </style>
 </head>
 <body>
+  <button id="theme-toggle" aria-label="Toggle dark/light mode" style="
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  width: 32px;
+  height: 32px;
+  background: #ccc;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 1001;
+">
+  🌙
+</button>
   <div class="container">
     <h2>Find Your 2026 Senedd Constituency</h2>
     <form id="lookup-form">
@@ -219,6 +269,10 @@
             await lookupByPostcode(postcode);
           } catch { resultDiv.textContent = 'Error retrieving postcode from your location.'; }
         }, () => resultDiv.textContent = 'Unable to retrieve your location.');
+         const themeBtn = document.getElementById('theme-toggle');
+      themeBtn.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        themeBtn.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
       });
     })();
   </script>
