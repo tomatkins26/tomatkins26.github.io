@@ -222,8 +222,11 @@
           if (!svgRes.ok) throw new Error('SVG not found');
           const svgText = await svgRes.text();
           svgContainer.innerHTML = svgText;
+
+          // Fade-in (container)
           svgContainer.classList.add('fade-in');
-            }
+
+          const svgElement = svgContainer.querySelector('svg');
 
           // Add descriptive aria labels for SEO + accessibility
           if (svgElement) {
