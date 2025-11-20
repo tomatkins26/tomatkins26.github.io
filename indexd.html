@@ -3,30 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
+
+  <!-- Improved SEO Title -->
   <title>2026 Senedd Constituency Lookup – Check Your Welsh Constituency</title>
 
+  <!-- Meta Description -->
   <meta name="description" content="Enter your postcode to find your 2026 Senedd constituency. This lookup uses official Welsh boundary data and works with any Welsh postcode.">
 
+  <!-- OpenGraph -->
   <meta property="og:title" content="2026 Senedd Constituency Lookup">
   <meta property="og:description" content="Find your 2026 Senedd constituency using your postcode.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://YOURDOMAIN.com">
 
+  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="2026 Senedd Constituency Lookup">
   <meta name="twitter:description" content="Find your 2026 Senedd constituency using your postcode.">
 
+  <!-- Turf.js (deferred load for performance) -->
   <script src="https://unpkg.com/@turf/turf@6/turf.min.js" defer></script>
 
+  <!-- Font -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap">
 
+  <!-- Structured Data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "2026 Senedd Constituency Lookup",
-    "url": "https://senedd2026.co.uk",
+    "url": "https://YOURDOMAIN.com",
     "applicationCategory": "Government",
     "description": "Check your 2026 Senedd constituency using your postcode."
   }
@@ -61,14 +68,7 @@
       text-align: left;
       border: 0px solid #eee;
     }
-        #svg-map svg {
-      opacity: 0;
-      transition: opacity 0.6s ease-in;
-    }
-    
-    #svg-map svg.fade-in {
-      opacity: 1;
-    }
+
     h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; }
     p.intro { margin-bottom: 1.25rem; color: #333; }
 
@@ -222,10 +222,7 @@
           if (!svgRes.ok) throw new Error('SVG not found');
           const svgText = await svgRes.text();
           svgContainer.innerHTML = svgText;
-          const svgElement = svgContainer.querySelector('svg');
-          if (svgElement) {
-          svgElement.classList.add('fade-in');
-            }
+
           const svgElement = svgContainer.querySelector('svg');
 
           // Add descriptive aria labels for SEO + accessibility
