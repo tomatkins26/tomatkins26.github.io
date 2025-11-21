@@ -4,30 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- Improved SEO Title -->
   <title>2026 Senedd Constituency Lookup – Check Your Welsh Constituency</title>
-
-  <!-- Meta Description -->
   <meta name="description" content="Enter your postcode to find your 2026 Senedd constituency. This lookup uses official Welsh boundary data and works with any Welsh postcode.">
 
-  <!-- OpenGraph -->
   <meta property="og:title" content="2026 Senedd Constituency Lookup">
   <meta property="og:description" content="Find your 2026 Senedd constituency using your postcode.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://YOURDOMAIN.com">
 
-  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="2026 Senedd Constituency Lookup">
   <meta name="twitter:description" content="Find your 2026 Senedd constituency using your postcode.">
 
-  <!-- Turf.js (deferred load for performance) -->
   <script src="https://unpkg.com/@turf/turf@6/turf.min.js" defer></script>
 
-  <!-- Font -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap">
 
-  <!-- Structured Data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -40,14 +32,14 @@
   </script>
 
   <style>
-   html, body {
+    html, body {
       height: 100%;
       margin: 0;
       font-family: 'Rubik', sans-serif;
-      background-color: #fff;
-      color: #000000;
       box-sizing: border-box;
+      transition: background-color 0.3s, color 0.3s;
     }
+
     body {
       display: flex;
       flex-direction: column;
@@ -56,6 +48,8 @@
       padding: 1.5rem;
       max-width: 100%;
       line-height: 1.6;
+      background-color: #fff;
+      color: #000;
     }
 
     * { border-radius: 8px; }
@@ -63,21 +57,24 @@
     .container {
       width: 100%;
       max-width: 700px;
-      background-color: #fff;
-      padding: 1.5rem;
+      padding: 2rem;
       text-align: left;
-      border: 0px solid #eee;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+      border-radius: 12px;
+      background-color: #fff;
+      transition: background-color 0.3s, color 0.3s;
     }
 
-    h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; }
+    h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.75rem; }
     p.intro { margin-bottom: 1.25rem; color: #333; }
 
     label { display: block; font-weight: 600; margin-bottom: 0.25rem; }
     .postcode-container { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-    input[type="text"] { flex: 1; min-width: 150px; padding: 0.5rem; font-size: 1rem; border: 1px solid #F54927; box-sizing: border-box; }
+    input[type="text"] { flex: 1; min-width: 150px; padding: 0.6rem; font-size: 1rem; border: 1px solid #F54927; box-sizing: border-box; }
     input[type="text"]:focus { outline: 2px solid #F54927; }
-    button[type="submit"] { margin-top: 1rem; width: 100%; padding: 0.7rem 1rem; font-size: 1rem; font-weight: 700; color: white; background-color: #F54927; border: none; cursor: pointer; }
+    button[type="submit"] { margin-top: 1rem; width: 100%; padding: 0.75rem 1rem; font-size: 1rem; font-weight: 700; color: white; background-color: #F54927; border: none; cursor: pointer; }
     button[type="submit"]:hover { background-color: #F87C63; }
+
     #result { margin-top: 1.5rem; font-weight: 600; }
     .const-highlight { color: #F54927; font-weight: 700; text-decoration: none; }
     .data-source { font-size: 0.8rem; color: #666; margin-top: 0.5rem; }
@@ -99,6 +96,7 @@
       border: 0 solid #F54927;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       z-index: 1000;
+      border-radius: 6px;
     }
 
     #map-tooltip::after {
@@ -115,8 +113,38 @@
     .highlighted-const { fill: #F54927 !important; stroke: #F87C63 !important; stroke-width: 3px !important; transition: fill 0.3s ease, stroke 0.3s ease; }
     #svg-map svg { width: 100%; height: auto; }
 
+    .toggle-mode {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: #F54927;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: background 0.3s;
+    }
+    .toggle-mode:hover { background: #F87C63; }
+
+    /* Dark mode */
+    body.dark {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+    body.dark .container {
+      background-color: #1e1e1e;
+      color: #e0e0e0;
+    }
+    body.dark input[type="text"] { background-color: #2a2a2a; color: #e0e0e0; border-color: #F54927; }
+    body.dark input[type="text"]:focus { outline-color: #F54927; }
+    body.dark #result { color: #e0e0e0; }
+    body.dark .data-source { color: #aaa; }
+    body.dark #map-tooltip { border-color: #F54927; }
+
     @media (max-width: 480px) {
-      h2 { font-size: 1.25rem; }
+      h2 { font-size: 1.5rem; }
       input[type="text"], button[type="submit"] { font-size: 0.95rem; }
       button[type="submit"] { padding: 0.8rem 1rem; }
     }
@@ -124,7 +152,8 @@
 </head>
 <body>
 
-  <!-- No-JS fallback -->
+  <button class="toggle-mode" aria-label="Toggle dark/light mode">Dark Mode</button>
+
   <noscript>
     <p style="background:#fee;padding:1rem;border:1px solid #F54927;">
       This tool needs JavaScript to work. Please enable JavaScript and reload the page.
@@ -132,7 +161,6 @@
   </noscript>
 
   <div class="container">
-
     <h2>Find Your 2026 Senedd Constituency</h2>
     <p class="intro">
       Enter your postcode to find out which of the new 2026 Senedd constituencies you live in. This lookup uses official Welsh boundary data.
@@ -157,14 +185,19 @@
     <div class="data-source">
       Data from Senedd Cymru/Welsh Parliament • Your data is used temporarily for this search and is not recorded.
     </div>
-
   </div>
 
   <div id="map-tooltip"></div>
 
-  <!-- Your script (unchanged internally except performance + accessibility tweaks applied above) -->
   <script>
-    /* JS unchanged except: turf.js now deferred, alt text supported via aria-label on <svg> you load */
+    // Dark/light toggle
+    const toggleBtn = document.querySelector('.toggle-mode');
+    toggleBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      toggleBtn.textContent = document.body.classList.contains('dark') ? 'Light Mode' : 'Dark Mode';
+    });
+
+    // Original lookup JS below (unchanged)
     (function () {
       const form = document.getElementById('lookup-form');
       const resultDiv = document.getElementById('result');
@@ -225,7 +258,6 @@
 
           const svgElement = svgContainer.querySelector('svg');
 
-          // Add descriptive aria labels for SEO + accessibility
           if (svgElement) {
             svgElement.setAttribute('role', 'img');
             svgElement.setAttribute('aria-label', `Map of the ${constituencyName} constituency`);
