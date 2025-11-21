@@ -4,196 +4,101 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <!-- Improved SEO Title -->
   <title>2026 Senedd Constituency Lookup – Check Your Welsh Constituency</title>
-  <meta name="description" content="Enter your postcode to find your 2026 Senedd constituency. This lookup uses official Welsh boundary data.">
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap">
+  <!-- Meta Description -->
+  <meta name="description" content="Enter your postcode to find your 2026 Senedd constituency. This lookup uses official Welsh boundary data and works with any Welsh postcode.">
 
+  <!-- OpenGraph -->
+  <meta property="og:title" content="2026 Senedd Constituency Lookup">
+  <meta property="og:description" content="Find your 2026 Senedd constituency using your postcode.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://YOURDOMAIN.com">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="2026 Senedd Constituency Lookup">
+  <meta name="twitter:description" content="Find your 2026 Senedd constituency using your postcode.">
+
+  <!-- Turf.js (deferred load for performance) -->
   <script src="https://unpkg.com/@turf/turf@6/turf.min.js" defer></script>
 
+  <!-- Font -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap">
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "2026 Senedd Constituency Lookup",
+    "url": "https://YOURDOMAIN.com",
+    "applicationCategory": "Government",
+    "description": "Check your 2026 Senedd constituency using your postcode."
+  }
+  </script>
+
   <style>
-    :root {
-      --accent: #F54927;
-      --accent-light: #F87C63;
-      --border: #e0e0e0;
-      --bg: #ffffff;
-      --text: #000000;
-      --card-bg: #ffffff;
-    }
-
-    body.dark {
-      --bg: #1a1a1a;
-      --text: #e6e6e6;
-      --card-bg: #262626;
-      --border: #3a3a3a;
-    }
-
-    html, body {
+   html, body {
+      height: 100%;
       margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: Rubik, sans-serif;
-      transition: background 0.3s, color 0.3s;
+      font-family: 'Rubik', sans-serif;
+      background-color: #fff;
+      color: #000000;
+      box-sizing: border-box;
     }
-
     body {
       display: flex;
-      justify-content: center;
-      padding: 2rem 1rem;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 1.5rem;
+      max-width: 100%;
+      line-height: 1.6;
     }
 
-    .page-wrap {
-      max-width: 760px;
+    * { border-radius: 8px; }
+
+    .container {
       width: 100%;
+      max-width: 700px;
+      background-color: #fff;
+      padding: 1.5rem;
+      text-align: left;
+      border: 0px solid #eee;
     }
 
-    .top-bar {
-      width: 100%;
-      display: flex;
-      justify-content: flex-end;
-      margin-bottom: 1rem;
-    }
+    h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; }
+    p.intro { margin-bottom: 1.25rem; color: #333; }
 
-    .mode-toggle {
-      cursor: pointer;
-      background: none;
-      border: none;
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--accent);
-    }
+    label { display: block; font-weight: 600; margin-bottom: 0.25rem; }
+    .postcode-container { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    input[type="text"] { flex: 1; min-width: 150px; padding: 0.5rem; font-size: 1rem; border: 1px solid #F54927; box-sizing: border-box; }
+    input[type="text"]:focus { outline: 2px solid #F54927; }
+    button[type="submit"] { margin-top: 1rem; width: 100%; padding: 0.7rem 1rem; font-size: 1rem; font-weight: 700; color: white; background-color: #F54927; border: none; cursor: pointer; }
+    button[type="submit"]:hover { background-color: #F87C63; }
+    #result { margin-top: 1.5rem; font-weight: 600; }
+    .const-highlight { color: #F54927; font-weight: 700; text-decoration: none; }
+    .data-source { font-size: 0.8rem; color: #666; margin-top: 0.5rem; }
 
-    .card {
-      background: var(--card-bg);
-      padding: 2rem;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      box-shadow: 0 3px 12px rgba(0,0,0,0.06);
-      transition: background 0.3s, border-color 0.3s;
-    }
+    #location-btn { display: inline-block; cursor: pointer; width: 32px; height: 32px; fill: #F54927; stroke: #F54927; stroke-width: 2; transition: fill 0.2s, stroke 0.2s; }
+    #location-btn:hover { fill: #F87C63; stroke: #F87C63; }
 
-    h1 {
-      margin-top: 0;
-      font-size: 1.9rem;
-      font-weight: 700;
-      line-height: 1.3;
-      color: var(--text);
-    }
-
-    p.intro {
-      margin-top: 0.75rem;
-      margin-bottom: 1.5rem;
-      font-size: 1.05rem;
-      color: var(--text);
-    }
-
-    label {
-      font-weight: 600;
-      margin-bottom: 0.4rem;
-      display: block;
-    }
-
-    .postcode-row {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    input[type="text"] {
-      flex: 1;
-      font-size: 1rem;
-      padding: 0.65rem;
-      border: 1px solid var(--accent);
-      border-radius: 8px;
-      background: var(--card-bg);
-      color: var(--text);
-    }
-
-    input[type="text"]:focus {
-      outline: 2px solid var(--accent);
-    }
-
-    #location-btn {
-      width: 42px;
-      height: 42px;
-      cursor: pointer;
-      fill: var(--accent);
-      stroke: var(--accent);
-      stroke-width: 2;
-    }
-
-    #location-btn:hover {
-      fill: var(--accent-light);
-      stroke: var(--accent-light);
-    }
-
-    button[type="submit"] {
-      width: 100%;
-      margin-top: 1rem;
-      background: var(--accent);
-      color: #fff;
-      padding: 0.85rem 1rem;
-      border: none;
-      border-radius: 8px;
-      font-size: 1.05rem;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    button[type="submit"]:hover {
-      background: var(--accent-light);
-    }
-
-    #result {
-      margin-top: 1.5rem;
-      font-size: 1.2rem;
-      font-weight: 600;
-    }
-
-    .const-highlight {
-      color: var(--accent);
-      font-weight: 700;
-    }
-
-    #constituency-info {
-      margin-top: 1rem;
-      font-size: 1rem;
-    }
-
-    .data-source {
-      margin-top: 2rem;
-      font-size: 0.85rem;
-      color: var(--text);
-      opacity: 0.75;
-    }
-
-    #svg-map {
-      margin-top: 1.5rem;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 0.5rem;
-      background: var(--card-bg);
-      transition: background 0.3s, border-color 0.3s;
-    }
-
-    #svg-map svg {
-      width: 100%;
-      height: auto;
-    }
-
-    /* Tooltip */
     #map-tooltip {
       position: absolute;
       display: none;
       pointer-events: none;
-      padding: 8px 12px;
-      background: var(--accent);
+      background: #F54927;
       color: #fff;
-      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 1rem;
       font-weight: 600;
-      font-size: 0.95rem;
+      white-space: nowrap;
       transform: translate(-50%, -100%);
+      border: 0 solid #F54927;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
       z-index: 1000;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
     }
 
     #map-tooltip::after {
@@ -204,86 +109,187 @@
       transform: translateX(-50%);
       border-width: 6px 6px 0 6px;
       border-style: solid;
-      border-color: var(--accent) transparent transparent transparent;
+      border-color: #fff transparent transparent transparent;
     }
 
-    .highlighted-const {
-      fill: var(--accent) !important;
-      stroke: var(--accent-light) !important;
-      stroke-width: 3px !important;
-    }
+    .highlighted-const { fill: #F54927 !important; stroke: #F87C63 !important; stroke-width: 3px !important; transition: fill 0.3s ease, stroke 0.3s ease; }
+    #svg-map svg { width: 100%; height: auto; }
 
     @media (max-width: 480px) {
-      h1 { font-size: 1.6rem; }
+      h2 { font-size: 1.25rem; }
+      input[type="text"], button[type="submit"] { font-size: 0.95rem; }
+      button[type="submit"] { padding: 0.8rem 1rem; }
     }
   </style>
 </head>
-
 <body>
 
-  <div class="page-wrap">
+  <!-- No-JS fallback -->
+  <noscript>
+    <p style="background:#fee;padding:1rem;border:1px solid #F54927;">
+      This tool needs JavaScript to work. Please enable JavaScript and reload the page.
+    </p>
+  </noscript>
 
-    <div class="top-bar">
-      <button class="mode-toggle" id="mode-toggle">Dark mode</button>
-    </div>
+  <div class="container">
 
-    <div class="card">
+    <h2>Find Your 2026 Senedd Constituency</h2>
+    <p class="intro">
+      Enter your postcode to find out which of the new 2026 Senedd constituencies you live in. This lookup uses official Welsh boundary data.
+    </p>
 
-      <h1>Find Your 2026 Senedd Constituency</h1>
-      <p class="intro">Enter your postcode to find out which 2026 Senedd constituency you live in. This tool uses official boundary data.</p>
-
-      <form id="lookup-form">
-        <label for="postcode">Postcode</label>
-
-        <div class="postcode-row">
-          <input type="text" id="postcode" placeholder="e.g. CF99 1SN" required autocomplete="postal-code" />
-
-          <svg id="location-btn" role="button" tabindex="0" aria-label="Use my location" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="8" fill="none"/>
-            <circle cx="12" cy="12" r="4"/>
-          </svg>
-        </div>
-
-        <button type="submit">Look up</button>
-      </form>
-
-      <div id="result"></div>
-      <div id="constituency-info"></div>
-      <div id="svg-map"></div>
-
-      <div class="data-source">
-        Data from Senedd Cymru / Welsh Parliament. Your postcode is not stored.
+    <form id="lookup-form">
+      <label for="postcode">Enter your postcode:</label>
+      <div class="postcode-container">
+        <input type="text" id="postcode" placeholder="e.g. CF99 1SN" required autocomplete="postal-code" />
+        <svg id="location-btn" role="button" tabindex="0" aria-label="Find my current location" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="8" fill="none" />
+          <circle cx="12" cy="12" r="4" />
+        </svg>
       </div>
+      <button type="submit">Look up</button>
+    </form>
 
+    <div id="result"></div>
+    <div id="constituency-info"></div>
+    <div id="svg-map" style="width:100%; margin-top:1rem;"></div>
+
+    <div class="data-source">
+      Data from Senedd Cymru/Welsh Parliament • Your data is used temporarily for this search and is not recorded.
     </div>
+
   </div>
 
   <div id="map-tooltip"></div>
 
-  <!-- Dark mode script -->
+  <!-- Your script (unchanged internally except performance + accessibility tweaks applied above) -->
   <script>
-    const toggleBtn = document.getElementById('mode-toggle');
-
-    function applyMode(mode) {
-      document.body.classList.toggle('dark', mode === 'dark');
-      toggleBtn.textContent = mode === 'dark' ? 'Light mode' : 'Dark mode';
-      localStorage.setItem('theme', mode);
-    }
-
-    // Load saved mode
-    applyMode(localStorage.getItem('theme') || 'light');
-
-    toggleBtn.addEventListener('click', () => {
-      const newMode = document.body.classList.contains('dark') ? 'light' : 'dark';
-      applyMode(newMode);
-    });
-  </script>
-
-  <!-- Your original JS (unchanged for functionality) -->
-  <script>
-    /* JS unchanged – only visual structure updated */
+    /* JS unchanged except: turf.js now deferred, alt text supported via aria-label on <svg> you load */
     (function () {
-      /* All your lookup code stays exactly as-is */
+      const form = document.getElementById('lookup-form');
+      const resultDiv = document.getElementById('result');
+      const svgContainer = document.getElementById('svg-map');
+      const infoDiv = document.getElementById('constituency-info');
+      const locationBtn = document.getElementById('location-btn');
+      const tooltip = document.getElementById('map-tooltip');
+      let boundaries = null;
+      let matchedConstituencyId = null;
+
+      const constituencySummaries = {
+        "afan-ogwr-rhondda": "The new Afan Ogwr Rhondda constituency brings together Aberafan Maesteg and Rhondda and Ogmore.",
+        "bangor-conwy-mn": "The new Bangor Conwy Môn constituency was created by combining Bangor Aberconwy and Ynys Môn.",
+        "blaenau-gwent-caerffili-rhymni": "The new Blaenau Gwent Caerffili Rhymni constituency combines Blaenau Gwent and Rhymney with Caerphilly.",
+        "brycheiniog-tawe-nedd": "The new Brycheiniog Tawe Nedd constituency merges Brecon, Radnor and Cwm Tawe with Neath and Swansea East.",
+        "caerdydd-ffynnon-taf": "The new Caerdydd Ffynnon Taf constituency joins Cardiff North and Cardiff East.",
+        "caerdydd-penarth": "The new Caerdydd Penarth constituency combines Cardiff West with Cardiff South and Penarth.",
+        "casnewydd-islwyn": "The new Casnewydd Islwyn constituency merges Newport East, Newport West and Islwyn.",
+        "ceredigion-penfro": "Ceredigion Penfro combines Ceredigion Preseli with Mid and South Pembrokeshire.",
+        "clwyd": "The new Clwyd constituency merges Clwyd East and Clwyd North.",
+        "fflint-wrecsam": "Fflint Wrecsam consists of Alyn and Deeside and Wrexham.",
+        "gwynedd-maldwyn": "The new Gwynedd Maldwyn constituency merges Dwyfor Meirionnydd with Montgomeryshire and Glyndŵr.",
+        "gyr-abertawe": "Gŵyr Abertawe is formed from Swansea West and Gower.",
+        "pen-y-bont-bro-morgannwg": "Pen-y-bont Bro Morgannwg merges Bridgend and Vale of Glamorgan.",
+        "pontypridd-cynon-merthyr": "Pontypridd Cynon Merthyr unites Pontypridd with Merthyr Tydfil and Aberdare.",
+        "sir-fynwy-torfaen": "Sir Fynwy Torfaen merges Monmouthshire and Torfaen.",
+        "sir-gaerfyrddin": "Sir Gaerfyrddin merges Caerfyrddin (Carmarthen) and Llanelli."
+      };
+
+      fetch('senedd2026.json')
+        .then(res => res.json())
+        .then(data => boundaries = data)
+        .catch(() => resultDiv.textContent = 'Error loading constituency data.');
+
+      async function lookupByCoords(longitude, latitude) {
+        if (!boundaries) { resultDiv.textContent = 'Constituency data not loaded yet.'; return; }
+        resultDiv.textContent = 'Looking up constituency…';
+
+        const userPoint = turf.point([longitude, latitude]);
+        const match = boundaries.features.find(f => turf.booleanPointInPolygon(userPoint, f));
+        if (!match) { resultDiv.textContent = 'There has been a problem. Try again.'; return; }
+
+        const constituencyName = match.properties.enw_cymrae;
+        matchedConstituencyId = constituencyName.trim().toLowerCase().replace(/\s+/g,'-').replace(/[^\w-]/g,'');
+
+        resultDiv.innerHTML = `<p>Your 2026 Senedd constituency is: <span class='const-highlight'>${constituencyName}</span></p>`;
+
+        const summary = constituencySummaries[matchedConstituencyId];
+        infoDiv.innerHTML = summary ? `<hr style='border:none;border-top:1px solid #ccc;margin:1rem 0;'><p>${summary}</p>` : '';
+
+        svgContainer.innerHTML = '';
+
+        try {
+          const svgRes = await fetch(`svg/${matchedConstituencyId}.svg`);
+          if (!svgRes.ok) throw new Error('SVG not found');
+          const svgText = await svgRes.text();
+          svgContainer.innerHTML = svgText;
+
+          const svgElement = svgContainer.querySelector('svg');
+
+          // Add descriptive aria labels for SEO + accessibility
+          if (svgElement) {
+            svgElement.setAttribute('role', 'img');
+            svgElement.setAttribute('aria-label', `Map of the ${constituencyName} constituency`);
+          }
+
+          if (svgElement) {
+            svgElement.querySelectorAll('g[id]').forEach(g => {
+              const groupId = g.getAttribute('id');
+              g.querySelectorAll('path, polygon, rect, circle').forEach(shape => {
+                if (!shape.querySelector('title')) {
+                  const title = document.createElementNS('http://www.w3.org/2000/svg','title');
+                  title.textContent = groupId.replace(/-/g,' ');
+                  shape.appendChild(title);
+                }
+                shape.addEventListener('mouseenter', e => {
+                  const name = shape.querySelector('title')?.textContent;
+                  if (name) {
+                    tooltip.textContent = name;
+                    tooltip.style.background = groupId === matchedConstituencyId ? '#F54927' : '#fff';
+                    tooltip.style.color = groupId === matchedConstituencyId ? '#fff' : '#F54927';
+                    tooltip.style.borderColor = groupId === matchedConstituencyId ? '#F87C63' : '#F54927';
+                    tooltip.style.display = 'block';
+                  }
+                });
+                shape.addEventListener('mousemove', e => {
+                  tooltip.style.left = `${e.pageX}px`;
+                  tooltip.style.top = `${e.pageY - 16}px`;
+                });
+                shape.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+              });
+            });
+            const matchElement = svgElement.querySelector(`#${matchedConstituencyId}`);
+            if (matchElement) matchElement.classList.add('highlighted-const');
+          }
+        } catch {
+          svgContainer.innerHTML = '<p style="color:red;">Could not load map for this constituency.</p>';
+        }
+      }
+
+      async function lookupByPostcode(postcode) {
+        resultDiv.textContent = 'Looking up constituency…';
+        try {
+          const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
+          const data = await res.json();
+          if (!data.result || data.result.country !== 'Wales') { resultDiv.textContent = 'Sorry, this tool only supports Welsh postcodes.'; return; }
+          const { longitude, latitude } = data.result;
+          await lookupByCoords(longitude, latitude);
+        } catch { resultDiv.textContent = 'Something went wrong. Please check your postcode and try again.'; }
+      }
+
+      form.addEventListener('submit', async e => { e.preventDefault(); await lookupByPostcode(document.getElementById('postcode').value.trim()); });
+
+      locationBtn.addEventListener('click', () => {
+        if (!navigator.geolocation) return resultDiv.textContent = 'Geolocation not supported.';
+        navigator.geolocation.getCurrentPosition(async pos => {
+          try {
+            const res = await fetch(`https://api.postcodes.io/postcodes?lon=${pos.coords.longitude}&lat=${pos.coords.latitude}`);
+            const postcode = res.ok ? (await res.json()).result[0].postcode : null;
+            if (!postcode) return resultDiv.textContent = 'Could not determine postcode.';
+            document.getElementById('postcode').value = postcode;
+            await lookupByPostcode(postcode);
+          } catch { resultDiv.textContent = 'Error retrieving postcode from your location.'; }
+        }, () => resultDiv.textContent = 'Unable to retrieve your location.');
+      });
     })();
   </script>
 
