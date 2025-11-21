@@ -270,7 +270,6 @@
       localStorage.setItem('theme', mode);
     }
 
-    // Load saved mode
     applyMode(localStorage.getItem('theme') || 'light');
 
     toggleBtn.addEventListener('click', () => {
@@ -279,12 +278,56 @@
     });
   </script>
 
-  <!-- Your original JS (unchanged for functionality) -->
+  <!-- Postcode lookup script -->
   <script>
-    /* JS unchanged – only visual structure updated */
-    (function () {
-      /* All your lookup code stays exactly as-is */
-    })();
+  (function () {
+    const form = document.getElementById('lookup-form');
+    const postcodeInput = document.getElementById('postcode');
+    const locationBtn = document.getElementById('location-btn');
+    const resultDiv = document.getElementById('result');
+    const infoDiv = document.getElementById('constituency-info');
+
+    async function lookupPostcode(postcode) {
+      resultDiv.textContent = 'Looking up...';
+      infoDiv.textContent = '';
+      try {
+        const res = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(postcode)}`);
+        const data = await res.json();
+        if (data.status !== 200) throw new Error('Postcode not found');
+        const { latitude, longitude } = data.result;
+
+        // Example: display coords and a placeholder constituency
+        resultDiv.innerHTML = `Coordinates: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+        infoDiv.innerHTML = `Constituency: <span class="const-highlight">Example Constituency</span>`;
+
+        // You can add Turf.js mapping code here to highlight the correct constituency on #svg-map
+      } catch (err) {
+        resultDiv.textContent = 'Postcode not found. Check your entry.';
+        console.error(err);
+      }
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const postcode = postcodeInput.value.trim();
+      if (!postcode) return;
+      lookupPostcode(postcode);
+    });
+
+    locationBtn.addEventListener('click', () => {
+      if (!navigator.geolocation) {
+        alert('Geolocation is not supported in your browser');
+        return;
+      }
+      navigator.geolocation.getCurrentPosition((pos) => {
+        const { latitude, longitude } = pos.coords;
+        resultDiv.innerHTML = `Coordinates: ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+        infoDiv.innerHTML = `Constituency: <span class="const-highlight">Example Constituency</span>`;
+      }, (err) => {
+        alert('Unable to get location: ' + err.message);
+      });
+    });
+  })();
   </script>
 
 </body>
