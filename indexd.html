@@ -76,9 +76,31 @@
 
     label { display: block; font-weight: 600; margin-bottom: 0.25rem; }
     .postcode-container { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-    input[type="text"] { flex: 1; min-width: 150px; padding: 0.6rem; font-size: 1rem; border: 1px solid #F54927; box-sizing: border-box; }
+
+    /* CHANGE 1: Input font now matches site font */
+    input[type="text"] {
+      flex: 1;
+      min-width: 150px;
+      padding: 0.6rem;
+      font-size: 1rem;
+      border: 1px solid #F54927;
+      box-sizing: border-box;
+      font-family: 'Rubik', sans-serif;
+    }
+
     input[type="text"]:focus { outline: 2px solid #F54927; }
-    button[type="submit"] { margin-top: 1rem; width: 100%; padding: 0.75rem 1rem; font-size: 1rem; font-weight: 700; color: white; background-color: #F54927; border: none; cursor: pointer; }
+
+    button[type="submit"] {
+      margin-top: 1rem;
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      font-weight: 700;
+      color: white;
+      background-color: #F54927;
+      border: none;
+      cursor: pointer;
+    }
     button[type="submit"]:hover { background-color: #F87C63; }
 
     #result { margin-top: 1.5rem; font-weight: 600; }
@@ -87,6 +109,13 @@
 
     #location-btn { display: inline-block; cursor: pointer; width: 32px; height: 32px; fill: #F54927; stroke: #F54927; stroke-width: 2; transition: fill 0.2s, stroke 0.2s; }
     #location-btn:hover { fill: #F87C63; stroke: #F87C63; }
+
+    /* CHANGE 2: Remove blue focus outline on SVG location button */
+    #location-btn:focus,
+    #location-btn:focus-visible {
+      outline: none;
+      box-shadow: none;
+    }
 
     #map-tooltip {
       position: absolute;
@@ -134,21 +163,20 @@
     }
     .toggle-mode:hover { background: #F87C63; }
 
-    /* Dark mode */
-body.dark {
-  background-color: #121212;
-  color: #e0e0e0;
-}
-body.dark .container {
-  background-color: #1e1e1e;
-  color: #e0e0e0;
-}
-body.dark input[type="text"] { background-color: #2a2a2a; color: #e0e0e0; border-color: #F54927; }
-body.dark input[type="text"]:focus { outline-color: #F54927; }
-body.dark #result { color: #e0e0e0; }
-body.dark .data-source { color: #aaa; }
-body.dark #map-tooltip { border-color: #F54927; }
-body.dark p.intro { color: #e0e0e0; }
+    body.dark {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+    body.dark .container {
+      background-color: #1e1e1e;
+      color: #e0e0e0;
+    }
+    body.dark input[type="text"] { background-color: #2a2a2a; color: #e0e0e0; border-color: #F54927; }
+    body.dark input[type="text"]:focus { outline-color: #F54927; }
+    body.dark #result { color: #e0e0e0; }
+    body.dark .data-source { color: #aaa; }
+    body.dark #map-tooltip { border-color: #F54927; }
+    body.dark p.intro { color: #e0e0e0; }
 
     @media (max-width: 480px) {
       h2 { font-size: 1.5rem; }
@@ -157,8 +185,8 @@ body.dark p.intro { color: #e0e0e0; }
     }
   </style>
 </head>
-<body>
 
+<body>
   <button class="toggle-mode" aria-label="Toggle dark/light mode">Dark Mode</button>
 
   <noscript>
